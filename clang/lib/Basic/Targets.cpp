@@ -38,6 +38,7 @@
 #include "Targets/TCE.h"
 #include "Targets/VE.h"
 #include "Targets/WebAssembly.h"
+#include "Targets/Wony.h"
 #include "Targets/X86.h"
 #include "Targets/XCore.h"
 #include "Targets/Xtensa.h"
@@ -119,6 +120,9 @@ std::unique_ptr<TargetInfo> AllocateTarget(const llvm::Triple &Triple,
 
   case llvm::Triple::arc:
     return std::make_unique<ARCTargetInfo>(Triple, Opts);
+
+  case llvm::Triple::wony:
+    return std::make_unique<WonyTargetInfo>(Triple, Opts);
 
   case llvm::Triple::xcore:
     return std::make_unique<XCoreTargetInfo>(Triple, Opts);

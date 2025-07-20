@@ -80,6 +80,7 @@ StringRef Triple::getArchTypeName(ArchType Kind) {
   case ve:             return "ve";
   case wasm32:         return "wasm32";
   case wasm64:         return "wasm64";
+  case wony:           return "wony";
   case x86:            return "i386";
   case x86_64:         return "x86_64";
   case xcore:          return "xcore";
@@ -193,6 +194,8 @@ StringRef Triple::getArchTypePrefix(ArchType Kind) {
   case mipsel:
   case mips64:
   case mips64el:    return "mips";
+
+  case wony:        return "wony";
 
   case hexagon:     return "hexagon";
 
@@ -432,6 +435,7 @@ Triple::ArchType Triple::getArchTypeForLLVMName(StringRef Name) {
     .Case("armeb", armeb)
     .Case("avr", avr)
     .StartsWith("bpf", BPFArch)
+    .Case("wony", wony)
     .Case("m68k", m68k)
     .Case("mips", mips)
     .Case("mipsel", mipsel)
@@ -577,6 +581,7 @@ static Triple::ArchType parseArch(StringRef ArchName) {
           .Case("arm64ec", Triple::aarch64)
           .Case("arm", Triple::arm)
           .Case("armeb", Triple::armeb)
+          .Case("wony", Triple::wony)
           .Case("thumb", Triple::thumb)
           .Case("thumbeb", Triple::thumbeb)
           .Case("avr", Triple::avr)
@@ -920,6 +925,7 @@ static Triple::ObjectFormatType getDefaultFormat(const Triple &T) {
   case Triple::aarch64:
   case Triple::aarch64_32:
   case Triple::arm:
+  case Triple::wony:
   case Triple::thumb:
   case Triple::x86:
   case Triple::x86_64:
@@ -1644,6 +1650,7 @@ unsigned Triple::getArchPointerBitWidth(llvm::Triple::ArchType Arch) {
     return 0;
 
   case llvm::Triple::avr:
+  case llvm::Triple::wony:
   case llvm::Triple::msp430:
     return 16;
 
@@ -1764,6 +1771,7 @@ Triple Triple::get32BitArchVariant() const {
   case Triple::armeb:
   case Triple::csky:
   case Triple::dxil:
+  case Triple::wony:
   case Triple::hexagon:
   case Triple::hsail:
   case Triple::kalimba:
@@ -1830,6 +1838,7 @@ Triple Triple::get64BitArchVariant() const {
   case Triple::avr:
   case Triple::csky:
   case Triple::dxil:
+  case Triple::wony:
   case Triple::hexagon:
   case Triple::kalimba:
   case Triple::lanai:
@@ -1935,6 +1944,7 @@ Triple Triple::getBigEndianArchVariant() const {
   case Triple::spirv64:
   case Triple::wasm32:
   case Triple::wasm64:
+  case Triple::wony:
   case Triple::x86:
   case Triple::x86_64:
   case Triple::xcore:
@@ -2046,6 +2056,7 @@ bool Triple::isLittleEndian() const {
   case Triple::ve:
   case Triple::wasm32:
   case Triple::wasm64:
+  case Triple::wony:
   case Triple::x86:
   case Triple::x86_64:
   case Triple::xcore:
