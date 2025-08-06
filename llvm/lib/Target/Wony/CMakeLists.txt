@@ -1,6 +1,8 @@
 add_llvm_component_group(Wony)
 
 add_llvm_target(WonyCodeGen
+  WonyISelLowering.cpp
+  WonySubtarget.cpp
   WonyTargetMachine.cpp
   LINK_COMPONENTS
   WonyDesc

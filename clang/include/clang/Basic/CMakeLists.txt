@@ -84,6 +84,10 @@ clang_tablegen(BuiltinsRISCV.inc -gen-clang-builtins
   SOURCE BuiltinsRISCV.td
   TARGET ClangBuiltinsRISCV)
 
+clang_tablegen(BuiltinsWony.inc -gen-clang-builtins
+  SOURCE BuiltinsWony.td
+  TARGET ClangBuiltinsWony)
+
 clang_tablegen(BuiltinsSPIRV.inc -gen-clang-builtins
   SOURCE BuiltinsSPIRV.td
   TARGET ClangBuiltinsSPIRV)
