@@ -1,7 +1,9 @@
 add_llvm_component_library(LLVMWonyInfo
   WonyTargetInfo.cpp
   LINK_COMPONENTS
+  MC
   Support
+  TextAPI
   ADD_TO_COMPONENT
   Wony
 )

@@ -4,12 +4,20 @@
 //
 //===----------------------------------------------------------------------===//
 
-
+#include "Wony.h"
+#include "WonySubtarget.h"
 #include "WonyTargetMachine.h"
-#include "TargetInfo/WonyTargetInfo.h"
+#include "WonyTargetObjectFile.h"
+#include "WonyTargetTransformInfo.h"
+#include "TargetInfo/WonyTargetInfo.h" // For getTheWonyTarget.
 #include "llvm/MC/TargetRegistry.h" // For RegisterTargetMachine.
 #include "llvm/Support/Compiler.h" // For LLVM_EXTERNAL_VISIBILITY.
 #include "llvm/Support/CodeGen.h"  // For CodeGenOptLevel.
+#include "llvm/CodeGen/TargetPassConfig.h"
+#include "llvm/Passes/PassBuilder.h"
+#include "llvm/Target/TargetLoweringObjectFile.h"
+
+#include <memory>
 
 using namespace llvm;
 
@@ -21,6 +29,20 @@ using namespace llvm;
  */
 extern "C" LLVM_EXTERNAL_VISIBILITY void LLVMInitializeWonyTarget() {
   RegisterTargetMachine<WonyTargetMachine> X(getTheWonyTarget());
+
+  PassRegistry &PR = *PassRegistry::getPassRegistry();
+  initializeWonySimpleConstantPropagationPass(PR);
+}
+
+static std::unique_ptr<TargetLoweringObjectFile> createTLOF(const Triple &TT) {
+  if (TT.isOSBinFormatELF()) {
+    return std::make_unique<Wony_ELFTargetObjectFile>();
+  }
+  if (TT.isOSBinFormatMachO()) {
+    return std::make_unique<Wony_MachoTargetObjectFile>();
+  }
+  // Other format not supported yet.
+  return nullptr;
 }
 
 static const char *WonyDataLayoutStr =
@@ -68,7 +90,10 @@ WonyTargetMachine::WonyTargetMachine(const Target &T, const Triple &TT,
     : CodeGenTargetMachineImpl(T, WonyDataLayoutStr, TT, CPU, FS, Options,
                                // Use the simplest relocation by default.
                                RM ? *RM : Reloc::Static,
-                               CM ? *CM : CodeModel::Small, OL) {}
+                               CM ? *CM : CodeModel::Small, OL),
+      TLOF(createTLOF(getTargetTriple())) {
+    initAsmInfo();
+  }
 
 WonyTargetMachine::~WonyTargetMachine() = default;
 
@@ -87,8 +112,55 @@ WonyTargetMachine::getSubtargetImpl(const Function& F) const {
   StringRef CPU = CPUAttr.isValid() ? CPUAttr.getValueAsString() : TargetCPU;
   StringRef FS = FSAttr.isValid() ? FSAttr.getValueAsString() : TargetFS;
 
+  // Eventually, we'll want to hook up a different subtarget based on at the
+  // target feature, target cpu, and tune cpu attached to F, but as of now,
+  // the target doesn't support anything fancy so we just have one subtarget
+  // for everything.
   if (!SubtargetSingleton) {
     SubtargetSingleton = std::make_unique<WonySubtarget>(TargetTriple, CPU, FS, *this);
   }
   return SubtargetSingleton.get();
+}
+
+TargetTransformInfo WonyTargetMachine::getTargetTransformInfo(const Function &F) const {
+  return TargetTransformInfo(WonyTTIImpl(this, F));
+}
+
+TargetLoweringObjectFile *WonyTargetMachine::getObjFileLowering() const {
+  return TLOF.get();
+}
+
+void WonyTargetMachine::registerPassBuilderCallbacks(PassBuilder &PB) {
+  #define GET_PASS_REGISTRY "WonyPassRegistry.def"
+  #include "llvm/Passes/TargetPassRegistry.inc"
+
+  PB.registerPipelineStartEPCallback(
+      [](ModulePassManager &MPM, OptimizationLevel OptLevel) {
+        // Do not add optimization passes if we are in O0.
+        if (OptLevel == OptimizationLevel::O0) {
+          return;
+        }
+        FunctionPassManager FPM;
+        FPM.addPass(WonySimpleConstantPropagationNewPass());
+        MPM.addPass(createModuleToFunctionPassAdaptor(std::move(FPM)));
+      });
+}
+
+TargetPassConfig *WonyTargetMachine::createPassConfig(PassManagerBase &PM) {
+  return new WonyPassConfig(*this, PM);
+}
+
+WonyPassConfig::WonyPassConfig(TargetMachine &TM, PassManagerBase &PM)
+: TargetPassConfig(TM, PM) {}
+
+bool WonyPassConfig::addInstSelector() {
+  // TODO: We need to hook up the DAG selector here.
+  return false;
+}
+
+void WonyPassConfig::addIRPasses() {
+  // Add the regular IR passes before putting our passes.
+  TargetPassConfig::addIRPasses();
+  if (getOptLevel() != CodeGenOptLevel::None)
+    addPass(createWonySimpleConstantPropagationPassForLegacyPM());
 }

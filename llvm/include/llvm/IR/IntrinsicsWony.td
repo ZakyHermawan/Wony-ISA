@@ -8,6 +8,8 @@
 // Definitions for all Wony intrinsics.
 //
 // All Wony intrinsics start with "llvm.wony.".
+//===----------------------------------------------------------------------===//
+
 let TargetPrefix = "wony" in {
   /// Wony_Intrinsic - Base class for the intrinsics exposed to Clang.
   class Wony_Intrinsic<string suffix, list<LLVMType> ret_types,

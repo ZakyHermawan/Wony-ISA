@@ -1,3 +1,9 @@
+//===----------------------------------------------------------------------===//
+//
+// This file implements Wony TargetInfo objects.
+//
+//===----------------------------------------------------------------------===//
+
 #include "Targets/Wony.h"
 #include "clang/Basic/MacroBuilder.h"
 #include "clang/Basic/TargetBuiltins.h"
