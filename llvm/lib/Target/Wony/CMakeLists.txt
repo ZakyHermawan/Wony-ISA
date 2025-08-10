@@ -3,12 +3,15 @@ add_llvm_component_group(Wony)
 set(LLVM_TARGET_DEFINITIONS Wony.td)
 
 tablegen(LLVM WonyGenSubtargetInfo.inc -gen-subtarget)
+tablegen(LLVM WonyGenRegisterInfo.inc -gen-register-info)
 
 add_public_tablegen_target(WonyCommonTableGen)
 
 add_llvm_target(WonyCodeGen
   WonySubtarget.cpp
   WonyISelLowering.cpp
+  WonyRegisterInfo.cpp
+  WonyFrameLowering.cpp
   WonyTargetMachine.cpp
   WonyTargetObjectFile.cpp
   WonyTargetTransformInfo.cpp

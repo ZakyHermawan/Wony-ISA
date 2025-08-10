@@ -21,6 +21,9 @@ using namespace llvm;
 #define GET_SUBTARGETINFO_MC_DESC
 #include "WonyGenSubtargetInfo.inc"
 
+#define GET_REGINFO_MC_DESC
+#include "WonyGenRegisterInfo.inc"
+
 static MCSubtargetInfo *
 createWonyMCSubtargetInfo(const Triple &TT, StringRef CPU, StringRef FS) {
   return createWonyMCSubtargetInfoImpl(TT, CPU, /*TuneCPU*/ CPU, FS);
@@ -45,7 +48,7 @@ static MCAsmInfo *createWonyMCAsmInfo(const MCRegisterInfo &MRI,
 
 static MCRegisterInfo *createWonyMCRegisterInfo(const Triple &Triple) {
   MCRegisterInfo *X = new MCRegisterInfo();
-  // TODO: Fill out the register info.
+  InitWonyMCRegisterInfo(X, Wony::R7);
   return X;
 }
 
