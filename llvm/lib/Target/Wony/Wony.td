@@ -8,6 +8,7 @@
 include "llvm/Target/Target.td"
 
 include "WonyRegisterInfo.td"
+include "WonyInstrInfo.td"
 
 def : ProcessorModel<"generic", NoSchedModel, /*Features=*/[]>;
 

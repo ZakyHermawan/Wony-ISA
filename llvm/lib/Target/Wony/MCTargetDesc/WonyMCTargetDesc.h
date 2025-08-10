@@ -17,3 +17,7 @@
 
 #define GET_REGINFO_ENUM
 #include "WonyGenRegisterInfo.inc"
+
+#define GET_INSTRINFO_ENUM
+#define GET_INSTRINFO_MC_HELPER_DECLS
+#include "WonyGenInstrInfo.inc"

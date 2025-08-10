@@ -24,6 +24,10 @@ using namespace llvm;
 #define GET_REGINFO_MC_DESC
 #include "WonyGenRegisterInfo.inc"
 
+#define GET_INSTRINFO_MC_DESC
+#define GET_INSTRINFO_MC_HELPERS
+#include "WonyGenInstrInfo.inc"
+
 static MCSubtargetInfo *
 createWonyMCSubtargetInfo(const Triple &TT, StringRef CPU, StringRef FS) {
   return createWonyMCSubtargetInfoImpl(TT, CPU, /*TuneCPU*/ CPU, FS);
@@ -54,7 +58,7 @@ static MCRegisterInfo *createWonyMCRegisterInfo(const Triple &Triple) {
 
 static MCInstrInfo *createWonyMCInstrInfo() {
   MCInstrInfo *X = new MCInstrInfo();
-  // TODO: Fill out the instr info.
+  InitWonyMCInstrInfo(X);
   return X;
 }
 

@@ -4,6 +4,7 @@ set(LLVM_TARGET_DEFINITIONS Wony.td)
 
 tablegen(LLVM WonyGenSubtargetInfo.inc -gen-subtarget)
 tablegen(LLVM WonyGenRegisterInfo.inc -gen-register-info)
+tablegen(LLVM WonyGenInstrInfo.inc -gen-instr-info)
 
 add_public_tablegen_target(WonyCommonTableGen)
 
