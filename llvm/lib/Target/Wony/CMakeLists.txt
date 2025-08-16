@@ -9,6 +9,8 @@ tablegen(LLVM WonyGenInstrInfo.inc -gen-instr-info)
 tablegen(LLVM WonyGenAsmWriter.inc -gen-asm-writer)
 # Encoding.
 tablegen(LLVM WonyGenMCCodeEmitter.inc -gen-emitter)
+# .s to MCInst
+tablegen(LLVM WonyGenAsmMatcher.inc -gen-asm-matcher)
 
 add_public_tablegen_target(WonyCommonTableGen)
 
@@ -41,5 +43,6 @@ add_llvm_target(WonyCodeGen
   Wony
 )
 
+add_subdirectory(AsmParser)
 add_subdirectory(MCTargetDesc)
 add_subdirectory(TargetInfo)

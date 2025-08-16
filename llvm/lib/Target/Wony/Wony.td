@@ -14,6 +14,9 @@ def : ProcessorModel<"generic", NoSchedModel, /*Features=*/[]>;
 
 def WonyInstrInfo : InstrInfo;
 
+def WonyAsmParser : AsmParser;
+
 def Wony : Target {
   let InstructionSet = WonyInstrInfo;
+  let AssemblyParsers = [WonyAsmParser];
 }
