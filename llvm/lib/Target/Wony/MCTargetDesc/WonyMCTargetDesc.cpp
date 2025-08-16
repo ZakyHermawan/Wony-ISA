@@ -5,6 +5,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "WonyMCTargetDesc.h"
+#include "WonyInstPrinter.h"
 #include "WonyMCAsmInfo.h"
 #include "TargetInfo/WonyTargetInfo.h" // For getTheWonyTarget.
 #include "llvm/MC/MCInstrInfo.h"
@@ -50,6 +51,17 @@ static MCAsmInfo *createWonyMCAsmInfo(const MCRegisterInfo &MRI,
   return MAI;
 }
 
+static MCInstPrinter *createWonyMCInstPrinter(const Triple &T,
+                                               unsigned SyntaxVariant,
+                                               const MCAsmInfo &MAI,
+                                               const MCInstrInfo &MII,
+                                               const MCRegisterInfo &MRI) {
+  if (SyntaxVariant == 0) {
+    return new WonyInstPrinter(MAI, MII, MRI);
+  }
+  return nullptr;
+}
+
 static MCRegisterInfo *createWonyMCRegisterInfo(const Triple &Triple) {
   MCRegisterInfo *X = new MCRegisterInfo();
   InitWonyMCRegisterInfo(X, Wony::R7);
@@ -84,4 +96,7 @@ extern "C" LLVM_EXTERNAL_VISIBILITY void LLVMInitializeWonyTargetMC() {
   // Register the MC subtarget info.
   TargetRegistry::RegisterMCSubtargetInfo(TheTarget,
                                           createWonyMCSubtargetInfo);
+
+  // Register the MCInst to asm printer.
+  TargetRegistry::RegisterMCInstPrinter(TheTarget, createWonyMCInstPrinter);
 }
