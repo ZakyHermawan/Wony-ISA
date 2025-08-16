@@ -7,6 +7,8 @@ tablegen(LLVM WonyGenRegisterInfo.inc -gen-register-info)
 tablegen(LLVM WonyGenInstrInfo.inc -gen-instr-info)
 # MCInst to .s
 tablegen(LLVM WonyGenAsmWriter.inc -gen-asm-writer)
+# Encoding.
+tablegen(LLVM WonyGenMCCodeEmitter.inc -gen-emitter)
 
 add_public_tablegen_target(WonyCommonTableGen)
 

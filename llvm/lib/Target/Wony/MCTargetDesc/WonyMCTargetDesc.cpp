@@ -99,4 +99,8 @@ extern "C" LLVM_EXTERNAL_VISIBILITY void LLVMInitializeWonyTargetMC() {
 
   // Register the MCInst to asm printer.
   TargetRegistry::RegisterMCInstPrinter(TheTarget, createWonyMCInstPrinter);
+
+  // Register the MC code emitter.
+  TargetRegistry::RegisterMCCodeEmitter(getTheWonyTarget(),
+                                        createWonyMCCodeEmitter);
 }
