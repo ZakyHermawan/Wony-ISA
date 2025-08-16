@@ -16,6 +16,8 @@ add_public_tablegen_target(WonyCommonTableGen)
 
 add_llvm_target(WonyCodeGen
   WonySubtarget.cpp
+  WonyInstrInfo.cpp
+  WonyAsmPrinter.cpp
   WonyISelLowering.cpp
   WonyRegisterInfo.cpp
   WonyFrameLowering.cpp
