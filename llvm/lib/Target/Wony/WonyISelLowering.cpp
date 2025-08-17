@@ -5,6 +5,7 @@
 //
 //===----------------------------------------------------------------------===//
 
+#include "Wony.h"
 #include "WonySubtarget.h"
 #include "WonyISelLowering.h"
 #include "WonyTargetMachine.h"
@@ -15,3 +16,9 @@ using namespace llvm;
 
 WonyTargetLowering::WonyTargetLowering(const TargetMachine &TM)
     : TargetLowering(TM) {}
+
+FastISel *
+WonyTargetLowering::createFastISel(FunctionLoweringInfo &funcInfo,
+                                    const TargetLibraryInfo *libInfo) const {
+  return Wony::createFastISel(funcInfo, libInfo);
+}

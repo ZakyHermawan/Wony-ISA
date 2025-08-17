@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include "MCTargetDesc/WonyMCTargetDesc.h" // For all the opcodes' enum.
 #include "llvm/CodeGen/TargetInstrInfo.h"
 
 #define GET_INSTRINFO_HEADER
