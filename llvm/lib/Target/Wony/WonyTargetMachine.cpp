@@ -9,6 +9,12 @@
 #include "WonyTargetMachine.h"
 #include "WonyTargetObjectFile.h"
 #include "WonyTargetTransformInfo.h"
+
+#include "llvm/CodeGen/GlobalISel/IRTranslator.h"
+#include "llvm/CodeGen/GlobalISel/InstructionSelect.h"
+#include "llvm/CodeGen/GlobalISel/Legalizer.h"
+#include "llvm/CodeGen/GlobalISel/RegBankSelect.h"
+
 #include "TargetInfo/WonyTargetInfo.h" // For getTheWonyTarget.
 #include "llvm/MC/TargetRegistry.h" // For RegisterTargetMachine.
 #include "llvm/Support/Compiler.h" // For LLVM_EXTERNAL_VISIBILITY.
@@ -152,6 +158,26 @@ TargetPassConfig *WonyTargetMachine::createPassConfig(PassManagerBase &PM) {
 
 WonyPassConfig::WonyPassConfig(TargetMachine &TM, PassManagerBase &PM)
 : TargetPassConfig(TM, PM) {}
+
+bool WonyPassConfig::addIRTranslator() {
+  addPass(new IRTranslator(getOptLevel()));
+  return false;
+}
+
+bool WonyPassConfig::addLegalizeMachineIR() {
+  addPass(new Legalizer());
+  return false;
+}
+
+bool WonyPassConfig::addRegBankSelect() {
+  addPass(new RegBankSelect());
+  return false;
+}
+
+bool WonyPassConfig::addGlobalInstructionSelect() {
+  addPass(new InstructionSelect(getOptLevel()));
+  return false;
+}
 
 bool WonyPassConfig::addInstSelector() {
   addPass(createWonyISelDAG(getWonyTargetMachine()));

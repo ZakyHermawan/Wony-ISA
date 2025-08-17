@@ -49,6 +49,10 @@ public:
     return getTM<WonyTargetMachine>();
   }
 
+  bool addIRTranslator() override;
+  bool addLegalizeMachineIR() override;
+  bool addRegBankSelect() override;
+  bool addGlobalInstructionSelect() override;
   bool addInstSelector() override;
   void addIRPasses() override;
 };
