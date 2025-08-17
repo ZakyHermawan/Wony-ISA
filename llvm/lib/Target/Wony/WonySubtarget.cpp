@@ -20,4 +20,5 @@ void WonySubtarget::anchor() {}
 
 WonySubtarget::WonySubtarget(const Triple &TT, StringRef CPU, StringRef FS,
                                const TargetMachine &TM)
-    : WonyGenSubtargetInfo(TT, CPU, /*TuneCPU=*/"", FS), TLInfo(TM) {}
+    : WonyGenSubtargetInfo(TT, CPU, /*TuneCPU=*/"", FS), FrameLowering(*this),
+      TLInfo(TM) {}

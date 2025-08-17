@@ -11,6 +11,7 @@ tablegen(LLVM WonyGenAsmWriter.inc -gen-asm-writer)
 tablegen(LLVM WonyGenMCCodeEmitter.inc -gen-emitter)
 # .s to MCInst
 tablegen(LLVM WonyGenAsmMatcher.inc -gen-asm-matcher)
+tablegen(LLVM WonyGenDAGIsel.inc -gen-dag-isel)
 
 add_public_tablegen_target(WonyCommonTableGen)
 
@@ -20,6 +21,7 @@ add_llvm_target(WonyCodeGen
   WonyAsmPrinter.cpp
   WonyISelLowering.cpp
   WonyRegisterInfo.cpp
+  WonyISelDAGToDAG.cpp
   WonyFrameLowering.cpp
   WonyTargetMachine.cpp
   WonyTargetObjectFile.cpp

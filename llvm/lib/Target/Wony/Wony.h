@@ -14,6 +14,7 @@ namespace llvm {
 class Function;
 class Pass;
 class PassRegistry;
+class WonyTargetMachine;
 
 class WonySimpleConstantPropagationNewPass
     : public llvm::PassInfoMixin<WonySimpleConstantPropagationNewPass> {
@@ -24,5 +25,8 @@ public:
 
 void initializeWonySimpleConstantPropagationPass(PassRegistry &);
 Pass *createWonySimpleConstantPropagationPassForLegacyPM();
+
+void initializeWonyDAGToDAGISelLegacyPass(PassRegistry &);
+Pass *createWonyISelDAG(WonyTargetMachine &TM);
 
 } // end namespace llvm.

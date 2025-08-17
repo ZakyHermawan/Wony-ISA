@@ -4,6 +4,8 @@
 //
 //===----------------------------------------------------------------------===//
 
+#pragma once
+
 #include "llvm/CodeGen/TargetFrameLowering.h"
 
 namespace llvm {

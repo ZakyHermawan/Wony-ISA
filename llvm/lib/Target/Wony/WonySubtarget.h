@@ -6,9 +6,13 @@
 
 #pragma once
 
+#include "WonyInstrInfo.h"
+#include "WonyRegisterInfo.h"
 #include "WonyISelLowering.h"
+#include "WonyFrameLowering.h"
 #include "llvm/ADT/StringRef.h"
 #include "llvm/CodeGen/TargetSubtargetInfo.h"
+#include "llvm/CodeGen/SelectionDAGTargetInfo.h"
 
 #define GET_SUBTARGETINFO_HEADER
 #include "WonyGenSubtargetInfo.inc"
@@ -20,13 +24,34 @@ class Triple;
 
 class WonySubtarget : public WonyGenSubtargetInfo {
   virtual void anchor();
+  WonyFrameLowering FrameLowering;
+  WonyInstrInfo InstrInfo;
+  WonyRegisterInfo RegisterInfo;
   WonyTargetLowering TLInfo;
+  SelectionDAGTargetInfo SDTgtInfo;
 
 public:
   WonySubtarget(const Triple &TT, StringRef CPU, StringRef FS,
                  const TargetMachine &TM);
+
+  const WonyInstrInfo *getInstrInfo() const override {
+    return &InstrInfo;
+  }
+
+  const WonyFrameLowering *getFrameLowering() const override {
+    return &FrameLowering;
+  }
+
+  const WonyRegisterInfo *getRegisterInfo() const override {
+    return &RegisterInfo;
+  }
+
   const WonyTargetLowering *getTargetLowering() const override {
     return &TLInfo;
+  }
+
+  const SelectionDAGTargetInfo *getSelectionDAGInfo() const override {
+    return &SDTgtInfo;
   }
 
   /// Parses features string setting specified subtarget options.

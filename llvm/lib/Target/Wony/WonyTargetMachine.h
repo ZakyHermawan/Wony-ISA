@@ -45,6 +45,10 @@ class WonyPassConfig : public TargetPassConfig {
 public:
   WonyPassConfig(TargetMachine &TM, PassManagerBase &PM);
 
+  WonyTargetMachine &getWonyTargetMachine() const {
+    return getTM<WonyTargetMachine>();
+  }
+
   bool addInstSelector() override;
   void addIRPasses() override;
 };
