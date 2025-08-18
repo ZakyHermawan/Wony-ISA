@@ -13,14 +13,15 @@
 
 #define GET_REGINFO_TARGET_DESC
 #include "WonyGenRegisterInfo.inc"
+
 using namespace llvm;
 
-WonyRegisterInfo::WonyRegisterInfo() : WonyGenRegisterInfo(Register()) {}
+WonyRegisterInfo::WonyRegisterInfo() : WonyGenRegisterInfo(Wony::R0) {}
 
 // mock implementation
 const MCPhysReg *
 WonyRegisterInfo::getCalleeSavedRegs(const MachineFunction *MF) const {
-  return nullptr;
+  return CSR_SaveList;
 }
 
 // mock implementation

@@ -13,6 +13,7 @@ tablegen(LLVM WonyGenMCCodeEmitter.inc -gen-emitter)
 tablegen(LLVM WonyGenAsmMatcher.inc -gen-asm-matcher)
 tablegen(LLVM WonyGenDAGISel.inc -gen-dag-isel)
 tablegen(LLVM WonyGenFastISel.inc -gen-fast-isel)
+tablegen(LLVM WonyGenCallingConv.inc -gen-callingconv)
 
 add_public_tablegen_target(WonyCommonTableGen)
 

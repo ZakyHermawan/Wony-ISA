@@ -17,8 +17,12 @@ using namespace llvm;
 WonyTargetLowering::WonyTargetLowering(const TargetMachine &TM)
     : TargetLowering(TM) {}
 
+// Calling Convention Implementation
+#include "WonyGenCallingConv.inc"
+
 FastISel *
 WonyTargetLowering::createFastISel(FunctionLoweringInfo &funcInfo,
                                     const TargetLibraryInfo *libInfo) const {
   return Wony::createFastISel(funcInfo, libInfo);
 }
+
