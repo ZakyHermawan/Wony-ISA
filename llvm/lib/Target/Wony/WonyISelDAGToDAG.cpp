@@ -47,6 +47,8 @@ void WonyDAGToDAGISel::Select(SDNode *N) {
     LLVM_DEBUG(dbgs() << '\n');
     return;
   }
+
+  SelectCode(N);
 }
 
 char WonyDAGToDAGISelLegacy::ID = 0;

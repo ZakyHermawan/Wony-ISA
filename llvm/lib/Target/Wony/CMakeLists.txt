@@ -11,9 +11,9 @@ tablegen(LLVM WonyGenAsmWriter.inc -gen-asm-writer)
 tablegen(LLVM WonyGenMCCodeEmitter.inc -gen-emitter)
 # .s to MCInst
 tablegen(LLVM WonyGenAsmMatcher.inc -gen-asm-matcher)
+tablegen(LLVM WonyGenCallingConv.inc -gen-callingconv)
 tablegen(LLVM WonyGenDAGISel.inc -gen-dag-isel)
 tablegen(LLVM WonyGenFastISel.inc -gen-fast-isel)
-tablegen(LLVM WonyGenCallingConv.inc -gen-callingconv)
 
 add_public_tablegen_target(WonyCommonTableGen)
 

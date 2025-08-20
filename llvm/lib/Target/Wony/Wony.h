@@ -33,6 +33,7 @@ void initializeWonyDAGToDAGISelLegacyPass(PassRegistry &);
 Pass *createWonyISelDAG(WonyTargetMachine &TM);
 
 namespace Wony {
+
 FastISel *createFastISel(FunctionLoweringInfo &FuncInfo,
                          const TargetLibraryInfo *LibInfo);
 
