@@ -25,4 +25,3 @@ WonyTargetLowering::createFastISel(FunctionLoweringInfo &funcInfo,
                                     const TargetLibraryInfo *libInfo) const {
   return Wony::createFastISel(funcInfo, libInfo);
 }
-

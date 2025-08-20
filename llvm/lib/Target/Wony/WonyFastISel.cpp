@@ -16,6 +16,10 @@ using namespace llvm;
 namespace {
 
 class WonyFastISel final : public FastISel {
+private:
+  // Selection routines.
+  bool selectRet(const Instruction &I);
+
 public:
   // Backend specific FastISel code.
   explicit WonyFastISel(FunctionLoweringInfo &FuncInfo,
@@ -36,10 +40,14 @@ bool WonyFastISel::fastSelectInstruction(const Instruction *I) {
   }
 
   switch (I->getOpcode()) {
+    case Instruction::Ret:
+      return selectRet(*I);
     default:
-    break;
-    // insert custom selection here.
+      break;
   }
+
+  // fall-back to target-independent instruction selection.
+  // If we don't have a specific selection routine for this instruction,
   return selectOperator(I, I->getOpcode());
 }
 
@@ -47,4 +55,27 @@ FastISel *Wony::createFastISel(FunctionLoweringInfo &FuncInfo,
                                 const TargetLibraryInfo *LibInfo) {
 
   return new WonyFastISel(FuncInfo, LibInfo);
+}
+
+bool WonyFastISel::selectRet(const Instruction &I) {
+  if (!FuncInfo.CanLowerReturn)
+    return false;
+
+  const Function &F = *I.getParent()->getParent();
+
+  // Give up on anything fancy.
+  if (F.isVarArg()) {
+    return false;
+  }
+  if (TLI.supportSplitCSR(FuncInfo.MF)) {
+    return false;
+  }
+
+  const ReturnInst &Ret = cast<ReturnInst>(I);
+  if (Ret.getNumOperands() > 0) {
+    return false;
+  }
+
+  BuildMI(*FuncInfo.MBB, FuncInfo.InsertPt, MIMD, TII.get(Wony::RETURN));
+  return true;
 }
