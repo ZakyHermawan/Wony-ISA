@@ -17,8 +17,18 @@ using namespace llvm;
 
 #define DEBUG_TYPE "wony-lowering"
 
-WonyTargetLowering::WonyTargetLowering(const TargetMachine &TM)
-    : TargetLowering(TM) {}
+WonyTargetLowering::WonyTargetLowering(const TargetMachine &TM,
+                                         const WonySubtarget &STI)
+    : TargetLowering(TM), Subtarget(STI) {
+  // call addRegisterClass to register all legal types
+  addRegisterClass(MVT::i16, &Wony::GPR16RegClass);
+  addRegisterClass(MVT::i32, &Wony::GPR32RegClass);
+
+  // Finalize the registration process and compute all the information that SDISel may need.
+  // Tell the generic implementation that we are done with setting up our
+  // register classes.
+  computeRegisterProperties(Subtarget.getRegisterInfo());
+}
 
 FastISel *
 WonyTargetLowering::createFastISel(FunctionLoweringInfo &funcInfo,

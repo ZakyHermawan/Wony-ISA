@@ -15,8 +15,11 @@ class WonySubtarget;
 class WonyTargetMachine;
 
 class WonyTargetLowering: public TargetLowering {
+  const WonySubtarget &Subtarget;
+
 public:
-  explicit WonyTargetLowering(const TargetMachine& TM);
+  explicit WonyTargetLowering(const TargetMachine &TM,
+                               const WonySubtarget &STI);
 
   /// This method returns a target specific FastISel object, or null if the
   /// target does not support "fast" ISel.
