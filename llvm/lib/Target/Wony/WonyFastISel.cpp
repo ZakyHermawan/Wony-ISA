@@ -8,6 +8,9 @@
 
 #include "Wony.h" // For the declaration of Wony::createFastISel.
 #include "WonyInstrInfo.h"
+#include "WonyRegisterInfo.h" // For the register classes.
+#include "WonyCallingConvention.h"
+
 #include "llvm/CodeGen/FastISel.h"
 #include "llvm/CodeGen/FunctionLoweringInfo.h"
 

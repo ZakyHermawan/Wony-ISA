@@ -9,6 +9,7 @@
 #include "WonySubtarget.h"
 #include "WonyISelLowering.h"
 #include "WonyTargetMachine.h"
+#include "WonyCallingConvention.h"
 
 using namespace llvm;
 
@@ -16,9 +17,6 @@ using namespace llvm;
 
 WonyTargetLowering::WonyTargetLowering(const TargetMachine &TM)
     : TargetLowering(TM) {}
-
-// Calling Convention Implementation
-#include "WonyGenCallingConv.inc"
 
 FastISel *
 WonyTargetLowering::createFastISel(FunctionLoweringInfo &funcInfo,

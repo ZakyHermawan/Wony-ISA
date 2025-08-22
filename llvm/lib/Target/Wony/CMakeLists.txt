@@ -28,6 +28,7 @@ add_llvm_target(WonyCodeGen
   WonyFrameLowering.cpp
   WonyTargetMachine.cpp
   WonyTargetObjectFile.cpp
+  WonyCallingConvention.cpp
   WonyTargetTransformInfo.cpp
   WonySimpleConstantPropagation.cpp
   LINK_COMPONENTS
