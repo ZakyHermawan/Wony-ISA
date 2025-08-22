@@ -11,6 +11,15 @@
 
 namespace llvm {
 
+namespace WonyISD {
+
+enum NodeType : unsigned {
+  FIRST_NUMBER = ISD::BUILTIN_OP_END,
+  RETURN_GLUE,
+};
+
+} // end WonyISD
+
 class WonySubtarget;
 class WonyTargetMachine;
 
@@ -36,6 +45,14 @@ public:
                                const SDLoc &DL, SelectionDAG &DAG,
                                SmallVectorImpl<SDValue> &InVals) const override;
 
+  // Lower return instruction, return WonyISD::RETURN_GLUE SDNode
+  SDValue LowerReturn(SDValue Chain, CallingConv::ID CallConv, bool IsVarArg,
+                      const SmallVectorImpl<ISD::OutputArg> &Outs,
+                      const SmallVectorImpl<SDValue> &OutVals, const SDLoc &DL,
+                      SelectionDAG &DAG) const override;
+
+  // This method returns the name of a target specific DAG node.
+  const char *getTargetNodeName(unsigned Opcode) const override;
 };
 
 } // end namespace llvm

@@ -56,6 +56,8 @@ SDValue WonyTargetLowering::LowerFormalArguments(SDValue Chain, CallingConv::ID 
 
   // Assign locations to all of the incoming arguments.
   SmallVector<CCValAssign, 16> ArgLocs;
+
+  // Populate ArgLocs
   CCState CCInfo(CallConv, IsVarArg, MF, ArgLocs, *DAG.getContext());
   CCInfo.AnalyzeFormalArguments(Ins, CC_Wony_Common);
 
@@ -112,4 +114,62 @@ SDValue WonyTargetLowering::LowerFormalArguments(SDValue Chain, CallingConv::ID 
   }
 
   return Chain;
+}
+
+SDValue
+WonyTargetLowering::LowerReturn(SDValue Chain, CallingConv::ID CallConv,
+                                 bool IsVarArg,
+                                 const SmallVectorImpl<ISD::OutputArg> &Outs,
+                                 const SmallVectorImpl<SDValue> &OutVals,
+                                 const SDLoc &DL, SelectionDAG &DAG) const {
+
+  SmallVector<CCValAssign> RetValLocs;
+  MachineFunction &MF = DAG.getMachineFunction();
+
+  // Populate RetValLocs
+  CCState CCInfo(CallConv, IsVarArg, MF, RetValLocs, *DAG.getContext());
+
+  CCInfo.AnalyzeReturn(Outs, RetCC_Wony_Common);
+
+  SDValue Glue;
+
+  // Vector to store all the operands needed for the target-specific return instruction node in SelectionDAG lowering
+  SmallVector<SDValue> RetOps(1, Chain);
+
+  // Copy the result values into the output registers.
+  for (size_t i = 0, e = RetValLocs.size(); i != e; ++i) {
+    CCValAssign &VA = RetValLocs[i];
+    assert(VA.isRegLoc() && "stack return not yet implemented");
+    assert(VA.getLocInfo() == CCValAssign::Full &&
+           "extension/truncation of any sort, not yet implemented");
+
+    // Create SDNode getCopyToReg,  
+    Chain = DAG.getCopyToReg(Chain, DL, VA.getLocReg(), OutVals[i], Glue);
+
+    // Guarantee that all emitted copies are stuck together,
+    // avoiding something bad.
+    Glue = Chain.getValue(1);
+    RetOps.push_back(DAG.getRegister(VA.getLocReg(), VA.getLocVT()));
+  }
+
+  // The return must have the last value of the chain.
+  // Update it now.
+  RetOps[0] = Chain;
+
+  // Add the glue if we have it.
+  if (Glue.getNode()) {
+    RetOps.push_back(Glue);
+  }
+
+  return DAG.getNode(WonyISD::RETURN_GLUE, DL, MVT::Other, RetOps);
+}
+
+const char *WonyTargetLowering::getTargetNodeName(unsigned Opcode) const {
+  switch ((WonyISD::NodeType)Opcode) {
+  case WonyISD::FIRST_NUMBER:
+    break;
+  case WonyISD::RETURN_GLUE:
+    return "WonyISD::RETURN_GLUE";
+  }
+  return nullptr;
 }

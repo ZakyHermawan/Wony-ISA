@@ -1,5 +1,9 @@
 include "WonyInstrFormats.td"
 
+// SelectionDAG target specific nodes.
+def WonyReturnGlue : SDNode<"WonyISD::RETURN_GLUE", SDTNone,
+                             [SDNPHasChain, SDNPOptInGlue, SDNPVariadic]>;
+
 def ADDi16rr : WonyBinaryInstruction<"addi16",
                                       /*opcode=*/0,
                                       /*is32Bit=*/false>;
