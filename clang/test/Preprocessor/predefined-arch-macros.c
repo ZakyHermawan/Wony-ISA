@@ -4561,3 +4561,8 @@
 // CHECK_LA64_ATOMICS: #define __GCC_HAVE_SYNC_COMPARE_AND_SWAP_2 1
 // CHECK_LA64_ATOMICS: #define __GCC_HAVE_SYNC_COMPARE_AND_SWAP_4 1
 // CHECK_LA64_ATOMICS: #define __GCC_HAVE_SYNC_COMPARE_AND_SWAP_8 1
+
+// RUN: %clang -E -dM %s -o - 2>&1 \
+// RUN:     --target=wony \
+// RUN:   | FileCheck -match-full-lines %s -check-prefix=CHECK_Wony
+// CHECK_Wony: #define __Wony__ 1
