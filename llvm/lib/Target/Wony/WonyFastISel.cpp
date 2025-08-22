@@ -23,6 +23,8 @@ private:
   // Selection routines.
   bool selectRet(const Instruction &I);
 
+  bool fastLowerArguments() override;
+
 public:
   // Backend specific FastISel code.
   explicit WonyFastISel(FunctionLoweringInfo &FuncInfo,
@@ -81,4 +83,20 @@ bool WonyFastISel::selectRet(const Instruction &I) {
 
   BuildMI(*FuncInfo.MBB, FuncInfo.InsertPt, MIMD, TII.get(Wony::RETURN));
   return true;
+}
+
+bool WonyFastISel::fastLowerArguments() {
+  if (!FuncInfo.CanLowerReturn)
+    return false;
+
+  const Function *F = FuncInfo.Fn;
+  if (F->isVarArg())
+    return false;
+
+  CallingConv::ID CC = F->getCallingConv();
+  if (CC != CallingConv::C && CC != CallingConv::Fast)
+    return false;
+
+  // Success only if there are no argument to lower.
+  return F->args().empty();
 }
