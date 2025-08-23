@@ -23,6 +23,9 @@ WonyTargetLowering::WonyTargetLowering(const TargetMachine &TM,
   // call addRegisterClass to register all legal types
   addRegisterClass(MVT::i16, &Wony::GPR16RegClass);
   addRegisterClass(MVT::i32, &Wony::GPR32RegClass);
+  
+  addRegisterClass(MVT::f16, &Wony::GPR16RegClass);
+  addRegisterClass(MVT::f32, &Wony::GPR32RegClass);
 
   // Finalize the registration process and compute all the information that SDISel may need.
   // Tell the generic implementation that we are done with setting up our
@@ -85,7 +88,15 @@ SDValue WonyTargetLowering::LowerFormalArguments(SDValue Chain, CallingConv::ID 
         break;
       }
       Register VReg = RegInfo.createVirtualRegister(DstRC);
+
+      // Instead of directly issuing a copy from the physical
+      // register to the virtual register that we created, we tell the MachineRegisterInfo instance of the current
+      // function that, first, this physical register is a live-in of the current function (so far, so good), and that
+      // this physical register is mapped on the given virtual register. Therefore, we do not materialize a copy
+      // yet, just a logical mapping using the following
       RegInfo.addLiveIn(VA.getLocReg(), VReg);
+
+      // Next, we materialize this copy in the SDISel IR
       ArgValue = DAG.getCopyFromReg(Chain, DL, VReg, RegVT);
     }
     else {
@@ -128,7 +139,6 @@ WonyTargetLowering::LowerReturn(SDValue Chain, CallingConv::ID CallConv,
 
   // Populate RetValLocs
   CCState CCInfo(CallConv, IsVarArg, MF, RetValLocs, *DAG.getContext());
-
   CCInfo.AnalyzeReturn(Outs, RetCC_Wony_Common);
 
   SDValue Glue;
