@@ -44,7 +44,6 @@ SDValue WonyTargetLowering::LowerFormalArguments(SDValue Chain, CallingConv::ID 
                                                  const SmallVectorImpl<ISD::InputArg> &Ins,
                                                  const SDLoc &DL, SelectionDAG &DAG,
                                                  SmallVectorImpl<SDValue> &InVals) const {
-
   if (IsVarArg) {
     report_fatal_error("variadic functions, not yet implemented");
   }
@@ -133,7 +132,6 @@ WonyTargetLowering::LowerReturn(SDValue Chain, CallingConv::ID CallConv,
                                  const SmallVectorImpl<ISD::OutputArg> &Outs,
                                  const SmallVectorImpl<SDValue> &OutVals,
                                  const SDLoc &DL, SelectionDAG &DAG) const {
-
   SmallVector<CCValAssign> RetValLocs;
   MachineFunction &MF = DAG.getMachineFunction();
 
@@ -172,6 +170,40 @@ WonyTargetLowering::LowerReturn(SDValue Chain, CallingConv::ID CallConv,
   }
 
   return DAG.getNode(WonyISD::RETURN_GLUE, DL, MVT::Other, RetOps);
+}
+
+// Performs prologue and epilogue register management for target,
+// specifically handling the saving and restoring of the link register
+void WonyTargetLowering::finalizeLowering(MachineFunction &MF) const {
+  const TargetInstrInfo &TII = *Subtarget.getInstrInfo();
+  MachineRegisterInfo &MRI = MF.getRegInfo();
+
+  // A link register (LR) is a special-purpose register used by some architectures
+  // to store the return address when a function call is made.
+  Register SavedLR = MRI.createVirtualRegister(&Wony::GPR16RegClass);
+  Register LR = Wony::R0;
+
+  // Prologue: Save LR
+  MachineBasicBlock &EntryMBB = MF.front();
+  BuildMI(EntryMBB, EntryMBB.begin(), DebugLoc(), TII.get(TargetOpcode::COPY),
+          SavedLR)
+      .addReg(LR);
+  EntryMBB.addLiveIn(LR);
+
+  // Epilogue: Restore LR
+  for (MachineBasicBlock &MaybeExitMBB : MF) {
+    if (!MaybeExitMBB.succ_empty())
+      continue;
+    assert(MaybeExitMBB.getFirstTerminator() != MaybeExitMBB.end() &&
+           "Exit block must have a terminator");
+    assert(MaybeExitMBB.getFirstTerminator()->getOpcode() == Wony::RETURN &&
+           "Exit block must end with return");
+    BuildMI(MaybeExitMBB, MaybeExitMBB.getFirstTerminator(), DebugLoc(),
+            TII.get(TargetOpcode::COPY), LR)
+        .addReg(SavedLR);
+  }
+
+  TargetLowering::finalizeLowering(MF);
 }
 
 const char *WonyTargetLowering::getTargetNodeName(unsigned Opcode) const {
