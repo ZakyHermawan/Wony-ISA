@@ -106,6 +106,11 @@ bool WonyFastISel::selectRet(const Instruction &I) {
       }
 
       const Value *RV = Ret.getReturnValue();
+
+      // This method looks at a map of which values
+      // are available in which registers and when the value is not available
+      // and not produced by an instruction (for instance, when this is a
+      // constant), it produces it on the spot
       Register SrcReg = getRegForValue(RV);
       if (SrcReg == Wony::NoRegister) {
         return false;
