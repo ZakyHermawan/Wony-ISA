@@ -1,14 +1,15 @@
 include "WonyInstrFormats.td"
 
 // SelectionDAG target specific nodes.
-def WonyReturnGlue : SDNode<"WonyISD::RETURN_GLUE", SDTNone,
+def Wonyreturnglue : SDNode<"WonyISD::RETURN_GLUE", SDTNone,
                              [SDNPHasChain, SDNPOptInGlue, SDNPVariadic]>;
 
 def ADDi16rr : WonyBinaryInstruction<"addi16",
                                       /*opcode=*/0,
                                       /*is32Bit=*/false>;
 
-let Uses = [R0], isReturn = 1, isTerminator = 1, isBarrier = 1 in
+let Uses = [R0], isReturn = 1, isTerminator = 1, isBarrier = 1,
+Pattern = [(Wonyreturnglue)] in
 def RETURN : WonyNoOperandInstruction<"ret",
                                        /*opcode=*/0b00001,
                                        /*is32Bit=*/false>;
