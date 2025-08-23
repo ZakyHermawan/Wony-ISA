@@ -48,7 +48,7 @@ void WonyInstPrinter::printOperand(const MCInst *MI, unsigned OpNo, raw_ostream 
 }
 void WonyInstPrinter::printImm(const MCInst *MI, unsigned OpNo, raw_ostream &O) {
   const MCOperand &Op = MI->getOperand(OpNo);
-  markup(O, Markup::Immediate) << "#" << formatImm(Op.getImm());
+  markup(O, Markup::Immediate) << formatImm(Op.getImm());
 }
 void WonyInstPrinter::printRegName(raw_ostream &OS, MCRegister Reg) {
   markup(OS, Markup::Register) << getRegisterName(Reg);

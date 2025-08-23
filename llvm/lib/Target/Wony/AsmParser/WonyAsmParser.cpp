@@ -58,6 +58,7 @@
 using namespace llvm;
 
 namespace {
+
 class WonyAsmParser : public MCTargetAsmParser {
 private:
   SMLoc getLoc() const { return getParser().getTok().getLoc(); }
@@ -85,6 +86,12 @@ private:
   ParseStatus parseRegister(OperandVector &Operands);
 
 public:
+  enum WonyMatchResultTy {
+    Match_InvalidSuffix = FIRST_TARGET_MATCH_RESULT_TY,
+  #define GET_OPERAND_DIAGNOSTIC_TYPES
+  #include "WonyGenAsmMatcher.inc"
+  };
+
   WonyAsmParser(const MCSubtargetInfo &STI, MCAsmParser &Parser,
                  const MCInstrInfo &MII, const MCTargetOptions &Options)
       : MCTargetAsmParser(Options, STI, MII) {
@@ -173,6 +180,15 @@ public:
     return Op;
   }
 
+  void addExpr(MCInst &Inst, const MCExpr *Expr) const {
+    assert(Expr && "Expr shouldn't be null!");
+
+    if (auto *CE = dyn_cast<MCConstantExpr>(Expr))
+      Inst.addOperand(MCOperand::createImm(CE->getValue()));
+    else
+      Inst.addOperand(MCOperand::createExpr(Expr));
+  }
+
   // Used by TableGen'ed code.
   void addRegOperands(MCInst &Inst, unsigned N) const {
     assert(N == 1 && "Invalid number of operands!");
@@ -181,6 +197,23 @@ public:
   StringRef getToken() const {
     assert(Kind == k_Token && "Invalid access!");
     return StringRef(Tok.Data, Tok.Length);
+  }
+
+  // Used by our definition of TableGen (look for the RenderMethod
+  // in the td file.)
+  void addImmOperands(MCInst &Inst, unsigned N) const {
+    assert(N == 1 && "Invalid number of operands!");
+    addExpr(Inst, getImm());
+  }
+
+  template <int N, int M> bool isImmInRange() const {
+    if (!isImm())
+      return false;
+    const MCConstantExpr *MCE = dyn_cast<MCConstantExpr>(getImm());
+    if (!MCE)
+      return false;
+    int64_t Val = MCE->getValue();
+    return (Val >= N && Val <= M);
   }
 
   /// Mandatory method to avoid being an abstract class.
@@ -205,6 +238,7 @@ public:
     return Imm.Val;
   }
 };
+
 } // end anonymous namespace.
 
 #define GET_REGISTER_MATCHER
@@ -354,6 +388,13 @@ bool WonyAsmParser::matchAndEmitInstruction(SMLoc IDLoc, unsigned &Opcode,
     }
 
     return Error(ErrorLoc, "invalid operand for instruction");
+  case Match_InvalidImm0_127:
+    // Any time we get here, there's nothing fancy to do. Just get the
+    // operand SMLoc and display the diagnostic.
+    ErrorLoc = ((WonyOperand &)*Operands[ErrorInfo]).getStartLoc();
+    if (ErrorLoc == SMLoc())
+      ErrorLoc = IDLoc;
+    return Error(ErrorLoc, "immediate must be an integer in range [0, 127].");
   }
 
   llvm_unreachable("Unknown match type detected!");
