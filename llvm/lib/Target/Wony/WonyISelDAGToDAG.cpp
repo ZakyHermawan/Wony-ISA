@@ -55,7 +55,7 @@ void WonyDAGToDAGISel::Select(SDNode *N) {
 }
 
 bool WonyDAGToDAGISel::selectAddrMode(SDValue N, SDValue &Base,
-                                       SDValue &OffImm) {
+                                      SDValue &OffImm) {
   SDLoc dl(N);
   const DataLayout &DL = CurDAG->getDataLayout();
   const TargetLowering *TLI = getTargetLowering();
