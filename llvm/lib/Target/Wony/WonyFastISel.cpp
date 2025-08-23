@@ -62,6 +62,9 @@ FastISel *Wony::createFastISel(FunctionLoweringInfo &FuncInfo,
   return new WonyFastISel(FuncInfo, LibInfo);
 }
 
+
+// Return true if FastISel successfully handle the instruction selection
+// Return false otherwise, the LLVM will fallback to SelectionDAG
 bool WonyFastISel::selectRet(const Instruction &I) {
   if (!FuncInfo.CanLowerReturn)
     return false;
@@ -76,12 +79,53 @@ bool WonyFastISel::selectRet(const Instruction &I) {
     return false;
   }
 
+  
+  // Build a list of return value registers.
+  SmallVector<Register, 4> RetRegs;
+
   const ReturnInst &Ret = cast<ReturnInst>(I);
+
+  // Handle case when return operand (non-void)
   if (Ret.getNumOperands() > 0) {
-    return false;
+    SmallVector<CCValAssign> RetValLocs;
+    MachineFunction &MF = *FuncInfo.MF;
+    CallingConv::ID CCID = F.getCallingConv();
+
+    CCState CCInfo(CCID, F.isVarArg(), MF, RetValLocs, Ret.getContext());
+
+    SmallVector<ISD::OutputArg, 4> Outs;
+
+    GetReturnInfo(CCID, F.getReturnType(), F.getAttributes(), Outs, TLI, DL);
+    CCInfo.AnalyzeReturn(Outs, RetCC_Wony_Common);
+
+    // Copy the result values into the output registers.
+    for (size_t i = 0; i != RetValLocs.size(); ++i) {
+      CCValAssign &VA = RetValLocs[i];
+      if (!VA.isRegLoc() || VA.getLocInfo() != CCValAssign::Full) {
+        return false;
+      }
+
+      const Value *RV = Ret.getReturnValue();
+      Register SrcReg = getRegForValue(RV);
+      if (SrcReg == Wony::NoRegister) {
+        return false;
+      }
+
+      Register DestReg = VA.getLocReg();
+      // Copy the virtual register to the desired physical register.
+      BuildMI(*FuncInfo.MBB, FuncInfo.InsertPt, MIMD,
+              TII.get(TargetOpcode::COPY), DestReg)
+          .addReg(SrcReg);
+
+      RetRegs.push_back(VA.getLocReg());
+    }
   }
 
-  BuildMI(*FuncInfo.MBB, FuncInfo.InsertPt, MIMD, TII.get(Wony::RETURN));
+  MachineInstrBuilder MIB =
+      BuildMI(*FuncInfo.MBB, FuncInfo.InsertPt, MIMD, TII.get(Wony::RETURN));
+
+  for (Register RetReg : RetRegs)
+    MIB.addReg(RetReg, RegState::Implicit);
   return true;
 }
 
