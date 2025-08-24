@@ -1,3 +1,29 @@
+//===----------------------------------------------------------------------===//
+//
+//  Describe Wony instructions format here
+//
+//===----------------------------------------------------------------------===//
+
+// classes for operand types.
+class AsmImmRange<int Low, int High> : AsmOperandClass {
+  let Name = "Imm" # Low # "_" # High;
+  let DiagnosticType = "InvalidImm" # Low # "_" # High;
+  let RenderMethod = "addImmOperands";
+  let PredicateMethod = "isImmInRange<" # Low # "," # High # ">";
+}
+
+def uimm7 : Operand<i16>, ImmLeaf<i16, [{return Imm >= 0 && Imm < 128;}]> {
+  let ParserMatchClass = AsmImmRange<0, 127>;
+}
+
+def uimm4 : Operand<i16>, ImmLeaf<i16, [{return Imm >= 0 && Imm < 16;}]> {
+  let ParserMatchClass = AsmImmRange<0, 15>;
+}
+
+def addrmode : ComplexPattern<iPTR, 2, "selectAddrMode", []>;
+
+// Instruction templates.
+
 class WonyInstruction<string asm, string operands,
                        bits<5> opcode = 0,
                        bit is32Bit = 0,
@@ -53,21 +79,3 @@ class WonyNoOperandInstruction<string asm,
                              (outs), (ins)> {
   let Inst{9-1} = 0;
 }
-
-// classes for operand types.
-class AsmImmRange<int Low, int High> : AsmOperandClass {
-  let Name = "Imm" # Low # "_" # High;
-  let DiagnosticType = "InvalidImm" # Low # "_" # High;
-  let RenderMethod = "addImmOperands";
-  let PredicateMethod = "isImmInRange<" # Low # "," # High # ">";
-}
-
-def uimm7 : Operand<i16>, ImmLeaf<i16, [{return Imm >= 0 && Imm < 128;}]> {
-  let ParserMatchClass = AsmImmRange<0, 127>;
-}
-
-def uimm4 : Operand<i16>, ImmLeaf<i16, [{return Imm >= 0 && Imm < 16;}]> {
-  let ParserMatchClass = AsmImmRange<0, 15>;
-}
-
-def addrmode : ComplexPattern<iPTR, 2, "selectAddrMode", []>;
