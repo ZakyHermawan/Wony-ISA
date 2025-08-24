@@ -76,6 +76,17 @@ def LDR16 : WonyLoadInstruction<"ldr16",
   let Pattern = [(set GPR16:$dst, (load (addrmode GPR16:$addr, uimm4:$offset)))];
 }
 
+// Store a register.
+def STR16 : WonyStoreInstruction<"str16",
+                                 /*is32Bit=*/0> {
+  let Pattern = [(store (i16 GPR16:$src), (addrmode GPR16:$addr, uimm4:$offset))];
+}
+
+def STR32 : WonyStoreInstruction<"str32",
+                                 /*is32Bit=*/1> {
+  let Pattern = [(store (i32 GPR32:$src), (addrmode GPR16:$addr, uimm4:$offset))];
+}
+
 def LDR32 : WonyLoadInstruction<"ldr32",
                                  /*is32Bit=*/1> {
   let Pattern = [(set GPR32:$dst, (load (addrmode GPR16:$addr, uimm4:$offset)))];
