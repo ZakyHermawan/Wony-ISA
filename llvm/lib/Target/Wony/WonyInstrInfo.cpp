@@ -6,6 +6,8 @@
 
 #include "WonyInstrInfo.h"
 #include "Wony.h"
+#include "WonyRegisterInfo.h"
+
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/CodeGen/MachineBasicBlock.h"
 #include "llvm/CodeGen/MachineInstrBuilder.h"
@@ -20,3 +22,19 @@
 using namespace llvm;
 
 WonyInstrInfo::WonyInstrInfo() : WonyGenInstrInfo() {}
+
+void WonyInstrInfo::copyPhysReg(MachineBasicBlock &MBB,
+                                 MachineBasicBlock::iterator MI,
+                                 const DebugLoc &DL, MCRegister DestReg,
+                                 MCRegister SrcReg, bool KillSrc,
+                                 bool RenamableDest, bool RenamableSrc) const {
+  const TargetRegisterInfo &TRI =
+      *MBB.getParent()->getSubtarget().getRegisterInfo();
+  unsigned Opc = TRI.getMinimalPhysRegClass(DestReg) == &Wony::GPR16RegClass
+                     ? Wony::MOV16
+                     : Wony::MOV32;
+  BuildMI(MBB, MI, MI->getDebugLoc(), get(Opc))
+      .addReg(DestReg, RegState::Define | getRenamableRegState(RenamableDest))
+      .addReg(SrcReg,
+              getKillRegState(KillSrc) | getRenamableRegState(RenamableSrc));
+}
