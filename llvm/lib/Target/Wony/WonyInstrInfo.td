@@ -35,6 +35,7 @@ def Wonycall : SDNode<"WonyISD::CALL",
                        [SDNPHasChain, SDNPOptInGlue, SDNPOutGlue,
                         SDNPVariadic]>;
 
+let Pattern = [(set GPR16:$dst, (add GPR16:$src0, GPR16:$src1))] in
 def ADDi16rr : WonyBinaryInstruction<"addi16",
                                       /*opcode=*/0,
                                       /*is32Bit=*/false>;
