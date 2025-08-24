@@ -105,3 +105,27 @@ def CALL : WonyInstruction<"call", "$tgt",
 
 def MOV16 : WonyMoveInstruction<"mov16", /*is32Bit=*/0>;
 def MOV32 : WonyMoveInstruction<"mov32", /*is32Bit=*/1>;
+
+def MOVTOSP: WonyInstruction<"movtosp", "$sp, $src",
+                                 /*opcode=*/0b00111,
+                                 /*toSP=*/1,
+                                 /*oops=*/(outs OnlySP:$sp),
+                                 /*iops=*/(ins GPR16:$src)> {
+  bits<3> sp;
+  bits<3> src;
+  let Inst{9-7} = sp;
+  let Inst{6-4} = src;
+  let Inst{3-0} = 0;
+}
+
+def MOVFROMSP: WonyInstruction<"movfromsp", "$dst, $sp",
+                                 /*opcode=*/0b00111,
+                                 /*toSP=*/0,
+                                 /*oops=*/(outs GPR16:$dst),
+                                 /*iops=*/(ins OnlySP:$sp)> {
+  bits<3> dst;
+  bits<3> sp;
+  let Inst{9-7} = dst;
+  let Inst{6-4} = sp;
+  let Inst{3-0} = 0;
+}

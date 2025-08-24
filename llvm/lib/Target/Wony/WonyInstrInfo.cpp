@@ -33,6 +33,16 @@ void WonyInstrInfo::copyPhysReg(MachineBasicBlock &MBB,
   unsigned Opc = TRI.getMinimalPhysRegClass(DestReg) == &Wony::GPR16RegClass
                      ? Wony::MOV16
                      : Wony::MOV32;
+  if (SrcReg == Wony::SP) {
+    assert(TRI.getMinimalPhysRegClass(DestReg) == &Wony::GPR16RegClass &&
+           "Dest reg for stack must be 16-bit");
+    Opc = Wony::MOVFROMSP;
+  } else if (DestReg == Wony::SP) {
+    assert(TRI.getMinimalPhysRegClass(SrcReg) == &Wony::GPR16RegClass &&
+           "Src reg for stack must be 16-bit");
+    Opc = Wony::MOVTOSP;
+  }
+
   BuildMI(MBB, MI, MI->getDebugLoc(), get(Opc))
       .addReg(DestReg, RegState::Define | getRenamableRegState(RenamableDest))
       .addReg(SrcReg,
