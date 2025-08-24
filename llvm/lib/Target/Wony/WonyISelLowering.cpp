@@ -212,6 +212,8 @@ const char *WonyTargetLowering::getTargetNodeName(unsigned Opcode) const {
     break;
   case WonyISD::RETURN_GLUE:
     return "WonyISD::RETURN_GLUE";
+  case WonyISD::CALL:
+    return "WonyISD::CALL";
   }
   return nullptr;
 }

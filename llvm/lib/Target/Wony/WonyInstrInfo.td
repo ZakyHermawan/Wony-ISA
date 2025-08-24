@@ -4,9 +4,43 @@ include "WonyInstrFormats.td"
 def Wonyreturnglue : SDNode<"WonyISD::RETURN_GLUE", SDTNone,
                              [SDNPHasChain, SDNPOptInGlue, SDNPVariadic]>;
 
+def Wonycallseq_start : SDNode<"ISD::CALLSEQ_START",
+                                // Two arguments:
+                                // Number of bytes allocated within the
+                                // callseq_start/end region and the number
+                                // of bytes allocated outside.
+                                SDCallSeqStart<[ SDTCisVT<0, i32>,
+                                                 SDTCisVT<1, i32> ]>,
+                                [SDNPHasChain, SDNPOutGlue]>;
+
+def Wonycallseq_end : SDNode<"ISD::CALLSEQ_END",
+                              // Same arguments as callseq_start.
+                              SDCallSeqEnd<[ SDTCisVT<0, i32>,
+                                             SDTCisVT<1, i32> ]>,
+                              [SDNPHasChain, SDNPOptInGlue, SDNPOutGlue]>;
+
+def Wonycall : SDNode<"WonyISD::CALL",
+                       // Type profile:
+                       // 0: no result.
+                       // -1: a variadic number of inputs.
+                       // The first operand must be a pointer (to the call
+                       // target)
+                       SDTypeProfile<0, -1, [SDTCisPtrTy<0>]>,
+                       [SDNPHasChain, SDNPOptInGlue, SDNPOutGlue,
+                        SDNPVariadic]>;
+
 def ADDi16rr : WonyBinaryInstruction<"addi16",
                                       /*opcode=*/0,
                                       /*is32Bit=*/false>;
+
+let hasSideEffects = 1, isCodeGenOnly = 1 in {
+  let Defs = [SP], Uses = [SP] in {
+  def ADJCALLSTACKDOWN : WonyPseudoInstruction<(outs), (ins i32imm:$amt1, i32imm:$amt2),
+                                [(Wonycallseq_start timm:$amt1, timm:$amt2)]>;
+  def ADJCALLSTACKUP : WonyPseudoInstruction<(outs), (ins i32imm:$amt1, i32imm:$amt2),
+                              [(Wonycallseq_end timm:$amt1, timm:$amt2)]>;
+  }
+}
 
 let Uses = [R0], isReturn = 1, isTerminator = 1, isBarrier = 1,
 Pattern = [(Wonyreturnglue)] in
