@@ -95,3 +95,6 @@ def CALL : WonyInstruction<"call", "$tgt",
   bits<11> tgt;
   let Inst{10-0} = tgt;
 }
+
+def MOV16 : WonyMoveInstruction<"mov16", /*is32Bit=*/0>;
+def MOV32 : WonyMoveInstruction<"mov32", /*is32Bit=*/1>;
