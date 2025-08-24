@@ -25,6 +25,9 @@ using namespace llvm;
 
 namespace {
 class WonyAsmPrinter : public AsmPrinter {
+  bool lowerOperand(const MachineOperand &MO, MCOperand &MCO);
+  MCInst MachineInstrToMCInst(const MachineInstr &MI);
+
 public:
   explicit WonyAsmPrinter(TargetMachine &TM,
                            std::unique_ptr<MCStreamer> Streamer)
@@ -39,7 +42,7 @@ public:
 /// Returns true if MO translates to an MCOperand.
 /// When false is returned, this means that no MCOperand needs to
 /// be produced for this MO (e.g., for an implicit MO.)
-static bool lowerOperand(const MachineOperand &MO, MCOperand &MCO) {
+bool WonyAsmPrinter::lowerOperand(const MachineOperand &MO, MCOperand &MCO) {
   switch (MO.getType()) {
   default:
     llvm_unreachable("unknown operand type");
@@ -55,8 +58,14 @@ static bool lowerOperand(const MachineOperand &MO, MCOperand &MCO) {
   case MachineOperand::MO_Immediate:
     MCO = MCOperand::createImm(MO.getImm());
     break;
+  case MachineOperand::MO_GlobalAddress: {
+    const GlobalValue *GV = MO.getGlobal();
+    MCSymbol *Sym = getSymbol(GV);
+    const MCExpr *Expr = MCSymbolRefExpr::create(Sym, OutContext);
+    MCO = MCOperand::createExpr(Expr);
+    break;
+  }
   case MachineOperand::MO_MachineBasicBlock:
-  case MachineOperand::MO_GlobalAddress:
   case MachineOperand::MO_ExternalSymbol:
   case MachineOperand::MO_MCSymbol:
   case MachineOperand::MO_JumpTableIndex:
@@ -68,7 +77,7 @@ static bool lowerOperand(const MachineOperand &MO, MCOperand &MCO) {
 }
 
 /// Translate a MachineInstr to a MCInst.
-static MCInst MachineInstrToMCInst(const MachineInstr &MI) {
+MCInst WonyAsmPrinter::MachineInstrToMCInst(const MachineInstr &MI) {
   MCInst TmpInst;
   TmpInst.setOpcode(MI.getOpcode());
 

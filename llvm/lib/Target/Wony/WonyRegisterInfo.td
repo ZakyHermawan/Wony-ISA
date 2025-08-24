@@ -43,6 +43,9 @@ let SubRegIndices = [sub_low16, sub_high16] in {
   def D3 : WonyReg<3, "d3", [R6, R7]>;
 }
 
+// Stack register, it is its own thing.
+def SP : WonyReg<0, "sp">;
+
 // Register classes.
 def GPR16 : RegisterClass<"Wony", [i16], 16, (sequence "R%u", 0, 7)>;
 def GPR32 : RegisterClass<"Wony", [i32], 32, (sequence "D%u", 0, 3)>;
