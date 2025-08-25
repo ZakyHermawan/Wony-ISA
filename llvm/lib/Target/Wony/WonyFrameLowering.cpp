@@ -20,8 +20,31 @@ bool WonyFrameLowering::hasFPImpl(const MachineFunction &MF) const {
 
 // mock implementation
 void WonyFrameLowering::emitPrologue(MachineFunction &MF,
-                                      MachineBasicBlock &MBB) const {}
+                                      MachineBasicBlock &MBB) const {
+  MachineFrameInfo &MFI = MF.getFrameInfo();
+  // Get the number of bytes to allocate from the FrameInfo.
+  unsigned NumBytes = MFI.getStackSize();
+
+  if (NumBytes > 0) {
+    const TargetInstrInfo *TII = MF.getSubtarget().getInstrInfo();
+    BuildMI(MBB, MBB.begin(), DebugLoc(), TII->get(Wony::SUBSP), Wony::SP)
+        .addReg(Wony::SP)
+        .addImm(NumBytes);
+  }
+}
 
 // mock implementation
 void WonyFrameLowering::emitEpilogue(MachineFunction &MF,
-                                      MachineBasicBlock &MBB) const {}
+                                      MachineBasicBlock &MBB) const {
+  MachineFrameInfo &MFI = MF.getFrameInfo();
+  // Get the number of bytes to allocate from the FrameInfo.
+  unsigned NumBytes = MFI.getStackSize();
+
+  if (NumBytes > 0) {
+    const TargetInstrInfo *TII = MF.getSubtarget().getInstrInfo();
+    BuildMI(MBB, MBB.getFirstTerminator(), DebugLoc(), TII->get(Wony::ADDSP),
+            Wony::SP)
+        .addReg(Wony::SP)
+        .addImm(NumBytes);
+  }
+}
