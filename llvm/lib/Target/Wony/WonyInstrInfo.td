@@ -90,7 +90,7 @@ def STR32 : WonyStoreInstruction<"str32",
 
 def LDR32 : WonyLoadInstruction<"ldr32",
                                  /*is32Bit=*/1> {
-  let Pattern = [(set GPR32:$dst, (load (addrmode GPR16:$addr, uimm4:$offset)))];
+  let Pattern = [(set (i32 GPR32:$dst), (load (addrmode GPR16:$addr, uimm4:$offset)))];
 }
 
 let isCall = 1, Defs = [R0], Uses = [SP] in
@@ -130,17 +130,25 @@ def MOVFROMSP: WonyInstruction<"movfromsp", "$dst, $sp",
   let Inst{3-0} = 0;
 }
 
+let AddedComplexity = 1 in {
+
 def STRSP16: WonyStoreSPInstruction<"strsp16", /*is32Bit=*/0> {
+  let Pattern = [(store (i16 GPR16:$src), (spaddrmode OnlySP:$sp, simm7:$offset))];
 }
 
 def STRSP32: WonyStoreSPInstruction<"strsp32", /*is32Bit=*/1> {
+  let Pattern = [(store (i32 GPR32:$src), (spaddrmode OnlySP:$sp, simm7:$offset))];
 }
 
 def LDRSP16: WonyLoadSPInstruction<"ldrsp16", /*is32Bit=*/0> {
+  let Pattern = [(set GPR16:$dst, (load (spaddrmode OnlySP:$sp, simm7:$offset)))];
 }
 
 def LDRSP32: WonyLoadSPInstruction<"ldrsp32", /*is32Bit=*/1> {
+  let Pattern = [(set (i32 GPR32:$dst), (load (spaddrmode OnlySP:$sp, simm7:$offset)))];
 }
+
+} // end AddedComplexity.
 
 def ADDSP : WonyBinarySPInstruction<"addsp",
                                      /*opcode=*/0b01010,
