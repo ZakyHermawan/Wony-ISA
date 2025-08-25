@@ -135,3 +135,9 @@ def STRSP16: WonyStoreSPInstruction<"strsp16", /*is32Bit=*/0> {
 
 def STRSP32: WonyStoreSPInstruction<"strsp32", /*is32Bit=*/1> {
 }
+
+def LDRSP16: WonyLoadSPInstruction<"ldrsp16", /*is32Bit=*/0> {
+}
+
+def LDRSP32: WonyLoadSPInstruction<"ldrsp32", /*is32Bit=*/1> {
+}
