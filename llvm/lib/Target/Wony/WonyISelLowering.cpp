@@ -183,6 +183,7 @@ SDValue WonyTargetLowering::LowerCall(TargetLowering::CallLoweringInfo &CLI,
   SDValue Callee = CLI.Callee;
   CallingConv::ID CallConv = CLI.CallConv;
   MachineFunction &MF = DAG.getMachineFunction();
+  SDLoc &DL = CLI.DL;
 
   // Wony target does not support tail call optimization.
   CLI.IsTailCall = false;
@@ -218,8 +219,15 @@ SDValue WonyTargetLowering::LowerCall(TargetLowering::CallLoweringInfo &CLI,
   }
 
   SDValue InGlue;
+  // Now that we collected all the registers, start the call sequence.
+  auto PtrVT = getPointerTy(MF.getDataLayout());
+  Chain = DAG.getCALLSEQ_START(Chain, NumBytes, 0, DL);
+
+  SDValue StackPtr = DAG.getCopyFromReg(Chain, DL, Wony::SP,
+                                        getPointerTy(DAG.getDataLayout()));
 
   SmallVector<std::pair<Register, SDValue>> RegsToPass;
+  SmallVector<SDValue, 8> MemOpChains;
 
   // Walk arg assignments
   for (size_t i = 0, e = ArgLocs.size(); i != e; ++i) {
@@ -236,29 +244,42 @@ SDValue WonyTargetLowering::LowerCall(TargetLowering::CallLoweringInfo &CLI,
       continue;
     }
     assert(VA.isMemLoc() && "Expected stack argument");
-    report_fatal_error("stack arguments not yet implemented");
+
+    SDValue DstAddr;
+    MachinePointerInfo DstInfo;
+
+    unsigned OpSize = VA.getValVT().getSizeInBits();
+    OpSize = (OpSize + 7) / 8;
+    unsigned LocMemOffset = VA.getLocMemOffset();
+    SDValue PtrOff = DAG.getIntPtrConstant(LocMemOffset, DL);
+    DstAddr = DAG.getNode(ISD::ADD, DL, PtrVT, StackPtr, PtrOff);
+    DstInfo = MachinePointerInfo::getStack(MF, LocMemOffset);
+
+    SDValue Store = DAG.getStore(Chain, DL, Arg, DstAddr, DstInfo);
+    MemOpChains.push_back(Store);
   }
 
-  // Now that we collected all the registers, start the call sequence.
-  auto PtrVT = getPointerTy(MF.getDataLayout());
-  Chain = DAG.getCALLSEQ_START(Chain, NumBytes, 0, CLI.DL);
+  if (!MemOpChains.empty()) {
+    Chain = DAG.getNode(ISD::TokenFactor, DL, MVT::Other, MemOpChains);
+  }
 
   // Build a sequence of copy-to-reg nodes chained together with token chain
   // and flag operands which copy the outgoing args into the appropriate regs.
   // We do this and not in the previous loop to chain the registers as close
   // as possible to the actual call.
   for (auto &RegToPass : RegsToPass) {
-    Chain = DAG.getCopyToReg(Chain, CLI.DL, RegToPass.first, RegToPass.second,
-                             InGlue);
+    Chain =
+      DAG.getCopyToReg(Chain, DL, RegToPass.first, RegToPass.second, InGlue);
     InGlue = Chain.getValue(1);
   }
 
   // If the callee is a GlobalAddress node (quite common, every direct call is)
   // turn it into a TargetGlobalAddress node so that all the generic code cannot
   // mess with it.
-  if (GlobalAddressSDNode *G = dyn_cast<GlobalAddressSDNode>(Callee))
-    Callee = DAG.getTargetGlobalAddress(G->getGlobal(), CLI.DL, PtrVT,
+  if (GlobalAddressSDNode *G = dyn_cast<GlobalAddressSDNode>(Callee)) {
+    Callee = DAG.getTargetGlobalAddress(G->getGlobal(), DL, PtrVT,
                                         G->getOffset(), 0);
+  }
   else
     report_fatal_error("non-direct calls not implemented");
 
@@ -282,14 +303,14 @@ SDValue WonyTargetLowering::LowerCall(TargetLowering::CallLoweringInfo &CLI,
 
   // The call will return a chain & a flag for retval copies to use.
   SDVTList NodeTys = DAG.getVTList(MVT::Other, MVT::Glue);
-  Chain = DAG.getNode(WonyISD::CALL, CLI.DL, NodeTys, Ops);
+  Chain = DAG.getNode(WonyISD::CALL, DL, NodeTys, Ops);
   InGlue = Chain.getValue(1);
 
   // Propagate any NoMerge attribute that we may have.
   DAG.addNoMergeSiteInfo(Chain.getNode(), CLI.NoMerge);
 
   // Finish the call sequence.
-  Chain = DAG.getCALLSEQ_END(Chain, NumBytes, 0, InGlue, CLI.DL);
+  Chain = DAG.getCALLSEQ_END(Chain, NumBytes, 0, InGlue, DL);
   InGlue = Chain.getValue(1);
 
   // Assign locations to each value returned by this call.
@@ -305,9 +326,8 @@ SDValue WonyTargetLowering::LowerCall(TargetLowering::CallLoweringInfo &CLI,
     assert(VA.getLocInfo() == CCValAssign::Full &&
            "extension/truncation of any sort, not yet implemented");
 
-    Chain =
-        DAG.getCopyFromReg(Chain, CLI.DL, VA.getLocReg(), VA.getValVT(), InGlue)
-            .getValue(1);
+    Chain = DAG.getCopyFromReg(Chain, DL, VA.getLocReg(), VA.getValVT(), InGlue)
+                .getValue(1);
 
     // Guarantee that all emitted copies are stuck together,
     // avoiding something bad.

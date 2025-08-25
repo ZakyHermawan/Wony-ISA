@@ -56,6 +56,10 @@ MachineBasicBlock::iterator WonyFrameLowering::eliminateCallFramePseudoInstr(
   const TargetInstrInfo *TII = MF.getSubtarget().getInstrInfo();
   unsigned Opc = MI->getOpcode();
 
+  // The call frame should always be included in the stack frame in the
+  // prologue.
+  assert(hasReservedCallFrame(MF) && "Wony doesn't have a FP register");
+
   if (Opc != TII->getCallFrameSetupOpcode() &&
       Opc != TII->getCallFrameDestroyOpcode())
     report_fatal_error("Unexpected frame pseudo instruction");
