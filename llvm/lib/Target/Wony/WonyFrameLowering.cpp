@@ -64,9 +64,6 @@ MachineBasicBlock::iterator WonyFrameLowering::eliminateCallFramePseudoInstr(
       Opc != TII->getCallFrameDestroyOpcode())
     report_fatal_error("Unexpected frame pseudo instruction");
 
-  if (MI->getOperand(0).getImm() != 0)
-    report_fatal_error("Proper frame lowering not yet implemented");
-
   if (MI->getOperand(1).getImm() != 0)
     report_fatal_error("Callee pop count not supported");
 
