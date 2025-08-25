@@ -21,6 +21,10 @@ def simm7 : Operand<i16>, ImmLeaf<i16, [{return Imm >= -64 && Imm < 63;}]> {
   let ParserMatchClass = AsmImmRange<-64, 63>;
 }
 
+def uimm10 : Operand<i16>, ImmLeaf<i16, [{return Imm >= 0 && Imm < 1024;}]> {
+  let ParserMatchClass = AsmImmRange<0, 1023>;
+}
+
 def uimm4 : Operand<i16>, ImmLeaf<i16, [{return Imm >= 0 && Imm < 16;}]> {
   let ParserMatchClass = AsmImmRange<0, 15>;
 }
@@ -156,4 +160,13 @@ class WonyLoadSPInstruction<string asm,
   bits<7> offset;
   let Inst{9-7} = dst;
   let Inst{6-0} = offset;
+}
+
+class WonyBinarySPInstruction<string asm,
+                               bits<5> opcode,
+                               bit isAdd>
+          : WonyInstruction<asm, "sp, sp, $imm", opcode, isAdd,
+                             (outs OnlySP:$dst), (ins OnlySP:$src, uimm10:$imm)> {
+  bits<10> imm;
+  let Inst{9-0} = imm;
 }

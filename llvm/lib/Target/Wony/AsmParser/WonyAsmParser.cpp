@@ -402,6 +402,7 @@ bool WonyAsmParser::matchAndEmitInstruction(SMLoc IDLoc, unsigned &Opcode,
     Match_InvalidImm(0, 127, "0");
     Match_InvalidImm(0, 15, "0");
     Match_InvalidImm(N64, 63, "-64");
+    Match_InvalidImm(0, 1023, "0");
   }
 
   llvm_unreachable("Unknown match type detected!");

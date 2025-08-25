@@ -141,3 +141,10 @@ def LDRSP16: WonyLoadSPInstruction<"ldrsp16", /*is32Bit=*/0> {
 
 def LDRSP32: WonyLoadSPInstruction<"ldrsp32", /*is32Bit=*/1> {
 }
+
+def ADDSP : WonyBinarySPInstruction<"addsp",
+                                     /*opcode=*/0b01010,
+                                     /*isAdd=*/true>;
+def SUBSP : WonyBinarySPInstruction<"subsp",
+                                     /*opcode=*/0b01010,
+                                     /*isAdd=*/false>;
