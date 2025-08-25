@@ -101,6 +101,7 @@ def CALL : WonyInstruction<"call", "$tgt",
                                  /*iops=*/(ins i16imm:$tgt)> {
   bits<11> tgt;
   let Inst{10-0} = tgt;
+  let Pattern = [(Wonycall tglobaladdr:$tgt)];
 }
 
 def MOV16 : WonyMoveInstruction<"mov16", /*is32Bit=*/0>;

@@ -25,6 +25,12 @@ WonyRegisterInfo::getCalleeSavedRegs(const MachineFunction *MF) const {
   return CSR_SaveList;
 }
 
+const uint32_t *
+WonyRegisterInfo::getCallPreservedMask(const MachineFunction &MF,
+                                        CallingConv::ID CC) const {
+  return CSR_RegMask;
+}
+
 // mock implementation
 BitVector WonyRegisterInfo::getReservedRegs(const MachineFunction &MF) const {
   BitVector Reserved(getNumRegs());

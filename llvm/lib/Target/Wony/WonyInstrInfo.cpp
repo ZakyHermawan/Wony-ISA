@@ -21,7 +21,8 @@
 
 using namespace llvm;
 
-WonyInstrInfo::WonyInstrInfo() : WonyGenInstrInfo() {}
+WonyInstrInfo::WonyInstrInfo()
+    : WonyGenInstrInfo(Wony::ADJCALLSTACKDOWN, Wony::ADJCALLSTACKUP) {}
 
 void WonyInstrInfo::copyPhysReg(MachineBasicBlock &MBB,
                                  MachineBasicBlock::iterator MI,

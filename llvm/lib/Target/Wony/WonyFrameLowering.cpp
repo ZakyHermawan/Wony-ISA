@@ -6,6 +6,7 @@
 
 #include "WonyFrameLowering.h"
 #include "WonySubtarget.h"
+#include "llvm/Support/Error.h"
 #include "llvm/CodeGen/MachineFrameInfo.h"
 #include "llvm/CodeGen/MachineFunction.h"
 #include "llvm/CodeGen/MachineInstrBuilder.h"
@@ -47,4 +48,23 @@ void WonyFrameLowering::emitEpilogue(MachineFunction &MF,
         .addReg(Wony::SP)
         .addImm(NumBytes);
   }
+}
+
+MachineBasicBlock::iterator WonyFrameLowering::eliminateCallFramePseudoInstr(
+    MachineFunction &MF, MachineBasicBlock &MBB,
+    MachineBasicBlock::iterator MI) const {
+  const TargetInstrInfo *TII = MF.getSubtarget().getInstrInfo();
+  unsigned Opc = MI->getOpcode();
+
+  if (Opc != TII->getCallFrameSetupOpcode() &&
+      Opc != TII->getCallFrameDestroyOpcode())
+    report_fatal_error("Unexpected frame pseudo instruction");
+
+  if (MI->getOperand(0).getImm() != 0)
+    report_fatal_error("Proper frame lowering not yet implemented");
+
+  if (MI->getOperand(1).getImm() != 0)
+    report_fatal_error("Callee pop count not supported");
+
+  return MBB.erase(MI);
 }
