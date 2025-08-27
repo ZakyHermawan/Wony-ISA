@@ -15,6 +15,7 @@
 #include "llvm/CodeGen/GlobalISel/Legalizer.h"
 #include "llvm/CodeGen/GlobalISel/RegBankSelect.h"
 
+#include "llvm/InitializePasses.h" // For initializeGlobalISel.
 #include "TargetInfo/WonyTargetInfo.h" // For getTheWonyTarget.
 #include "llvm/MC/TargetRegistry.h" // For RegisterTargetMachine.
 #include "llvm/Support/Compiler.h" // For LLVM_EXTERNAL_VISIBILITY.
@@ -38,6 +39,7 @@ extern "C" LLVM_EXTERNAL_VISIBILITY void LLVMInitializeWonyTarget() {
 
   PassRegistry &PR = *PassRegistry::getPassRegistry();
   initializeWonySimpleConstantPropagationPass(PR);
+  initializeGlobalISel(PR);
 }
 
 static std::unique_ptr<TargetLoweringObjectFile> createTLOF(const Triple &TT) {

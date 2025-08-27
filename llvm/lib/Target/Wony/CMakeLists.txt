@@ -31,14 +31,19 @@ add_llvm_target(WonyCodeGen
   WonyCallingConvention.cpp
   WonyTargetTransformInfo.cpp
   WonySimpleConstantPropagation.cpp
-  LINK_COMPONENTS
 
+  # GlobalISel related files.
+  GISel/WonyCallLowering.cpp
+
+  LINK_COMPONENTS
   WonyDesc
   WonyInfo
 
   Analysis
   CodeGen
+  CodeGenTypes
   Core
+  GlobalISel
   MC
   Passes
   SelectionDAG

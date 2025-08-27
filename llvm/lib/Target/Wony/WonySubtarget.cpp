@@ -5,6 +5,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "WonySubtarget.h"
+#include "GISel/WonyCallLowering.h"
 #include "llvm/Target/TargetMachine.h"
 
 using namespace llvm;
@@ -21,4 +22,11 @@ void WonySubtarget::anchor() {}
 WonySubtarget::WonySubtarget(const Triple &TT, StringRef CPU, StringRef FS,
                                const TargetMachine &TM)
     : WonyGenSubtargetInfo(TT, CPU, /*TuneCPU=*/"", FS), FrameLowering(*this),
-      TLInfo(TM, *this) {}
+
+      TLInfo(TM, *this) {
+  CallLoweringInfo.reset(new WonyCallLowering(*getTargetLowering()));
+}
+
+const CallLowering *WonySubtarget::getCallLowering() const {
+  return CallLoweringInfo.get();
+}
