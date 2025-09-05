@@ -71,6 +71,9 @@ def LD16imm7 : WonyInstruction<"ldi16", "$dst, $imm7",
 def LD16imm16 : WonyPseudoInstruction<(outs GPR16:$dst), (ins i16imm:$src),
                                        [(set GPR16:$dst, imm:$src)]>;
 
+def LD32imm32 : WonyPseudoInstruction<(outs GPR32:$dst), (ins i32imm:$src),
+                                       [(set (i32 GPR32:$dst), imm:$src)]>;
+
 // Load a register.
 def LDR16 : WonyLoadInstruction<"ldr16",
                                  /*is32Bit=*/0> {
