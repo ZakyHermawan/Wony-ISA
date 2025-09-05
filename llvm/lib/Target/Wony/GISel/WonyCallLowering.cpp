@@ -67,8 +67,9 @@ struct WonyIncomingValueAssigner : public CallLowering::IncomingValueAssigner {
                  CCValAssign::LocInfo LocInfo,
                  const CallLowering::ArgInfo &Info, ISD::ArgFlagsTy Flags,
                  CCState &State) override {
-    if (State.isVarArg() || Flags.isByVal())
+    if (State.isVarArg() || Flags.isByVal()) {
       return false;
+    }
 
     bool Res = AssignFn(ValNo, ValVT, LocVT, LocInfo, Flags, State);
     StackSize = State.getStackSize();
@@ -84,8 +85,9 @@ struct WonyOutgoingValueAssigner : public CallLowering::OutgoingValueAssigner {
                  CCValAssign::LocInfo LocInfo,
                  const CallLowering::ArgInfo &Info, ISD::ArgFlagsTy Flags,
                  CCState &State) override {
-    if (State.isVarArg() || Flags.isByVal())
+    if (State.isVarArg() || Flags.isByVal()) {
       return false;
+    }
 
     bool Res = AssignFn(ValNo, ValVT, LocVT, LocInfo, Flags, State);
     StackSize = State.getStackSize();
@@ -112,8 +114,9 @@ struct IncomingArgHandler : public CallLowering::IncomingValueHandler {
                              ISD::ArgFlagsTy Flags) const override {
     // For pointers, we just need to fixup the integer types reported in the
     // CCValAssign.
-    if (Flags.isPointer())
+    if (Flags.isPointer()) {
       return CallLowering::ValueHandler::getStackValueStoreType(DL, VA, Flags);
+    }
     return getStackValueStoreTypeHack(VA);
   }
 
@@ -183,11 +186,11 @@ struct OutgoingArgHandler : public CallLowering::OutgoingValueHandler {
     LLT p0 = LLT::pointer(0, 16);
     LLT s16 = LLT::scalar(16);
 
-    if (!SPReg)
+    if (!SPReg) {
       SPReg = MIRBuilder.buildCopy(p0, Register(Wony::SP)).getReg(0);
+    }
 
     auto OffsetReg = MIRBuilder.buildConstant(s16, Offset);
-
     auto AddrReg = MIRBuilder.buildPtrAdd(p0, SPReg, OffsetReg);
 
     MPO = MachinePointerInfo::getStack(MF, Offset);
@@ -243,10 +246,9 @@ bool WonyCallLowering::lowerReturn(MachineIRBuilder &MIRBuilder,
          "Return value without a vreg");
 
   bool Success = true;
-  if (!FLI.CanLowerReturn)
-    report_fatal_error("sret demoting not implemented yet");
-
-  if (!VRegs.empty()) {
+  if (!FLI.CanLowerReturn) {
+    insertSRetStores(MIRBuilder, Val->getType(), VRegs, FLI.DemoteRegister);
+  } else if (!VRegs.empty()) {
     MachineFunction &MF = MIRBuilder.getMF();
     const Function &F = MF.getFunction();
 
@@ -271,8 +273,9 @@ bool WonyCallLowering::lowerReturn(MachineIRBuilder &MIRBuilder,
       if (TLI.getNumRegistersForCallingConv(Ctx, CC, SplitEVTs[i]) == 1) {
         MVT NewVT = TLI.getRegisterTypeForCallingConv(Ctx, CC, SplitEVTs[i]);
         // Some types will need extending as specified by the CC.
-        if (EVT(NewVT) != SplitEVTs[i])
+        if (EVT(NewVT) != SplitEVTs[i]) {
           report_fatal_error("Extension not implemented yet");
+        }
       }
       splitToValueTypes(CurArgInfo, SplitArgs, DL, CC);
     }
@@ -314,13 +317,15 @@ bool WonyCallLowering::lowerFormalArguments(MachineIRBuilder &MIRBuilder,
 
   // Insert the hidden sret parameter if the return value won't fit in the
   // return registers.
-  if (!FLI.CanLowerReturn)
+  if (!FLI.CanLowerReturn) {
     insertSRetIncomingArgument(F, SplitArgs, FLI.DemoteRegister, MRI, DL);
+  }
 
   unsigned i = 0;
   for (auto &Arg : F.args()) {
-    if (DL.getTypeStoreSize(Arg.getType()).isZero())
+    if (DL.getTypeStoreSize(Arg.getType()).isZero()) {
       continue;
+    }
 
     ArgInfo OrigArg{VRegs[i], Arg, i};
     setArgFlags(OrigArg, i + AttributeList::FirstArgIndex, DL, F);
@@ -329,8 +334,9 @@ bool WonyCallLowering::lowerFormalArguments(MachineIRBuilder &MIRBuilder,
     ++i;
   }
 
-  if (!MBB.empty())
+  if (!MBB.empty()) {
     MIRBuilder.setInstr(*MBB.begin());
+  }
 
   CCAssignFn *AssignFn = CC_Wony_Common;
 
@@ -339,8 +345,9 @@ bool WonyCallLowering::lowerFormalArguments(MachineIRBuilder &MIRBuilder,
   SmallVector<CCValAssign, 16> ArgLocs;
   CCState CCInfo(F.getCallingConv(), F.isVarArg(), MF, ArgLocs, F.getContext());
   if (!determineAssignments(Assigner, SplitArgs, CCInfo) ||
-      !handleAssignments(Handler, SplitArgs, CCInfo, ArgLocs, MIRBuilder))
-    return false;
+      !handleAssignments(Handler, SplitArgs, CCInfo, ArgLocs, MIRBuilder)) {
+        return false;
+  }
 
   // Move back to the end of the basic block.
   MIRBuilder.setMBB(MBB);
@@ -357,12 +364,20 @@ bool WonyCallLowering::lowerCall(MachineIRBuilder &MIRBuilder,
   const WonySubtarget &Subtarget = MF.getSubtarget<WonySubtarget>();
 
   SmallVector<ArgInfo, 8> OutArgs;
-  for (auto &OrigArg : Info.OrigArgs)
+  for (auto &OrigArg : Info.OrigArgs) {
     splitToValueTypes(OrigArg, OutArgs, DL, Info.CallConv);
+  }
 
   SmallVector<ArgInfo, 8> InArgs;
-  if (!Info.OrigRet.Ty->isVoidTy())
+  if (!Info.OrigRet.Ty->isVoidTy()) {
     splitToValueTypes(Info.OrigRet, InArgs, DL, Info.CallConv);
+  }
+
+  if (!Info.CanLowerReturn) {
+    insertSRetLoads(MIRBuilder, Info.OrigRet.Ty, Info.OrigRet.Regs,
+                    Info.DemoteRegister, Info.DemoteStackIndex);
+    return true;
+  }
 
   CCAssignFn *AssignFnFixed;
   CCAssignFn *AssignFnVarArg;
@@ -372,8 +387,9 @@ bool WonyCallLowering::lowerCall(MachineIRBuilder &MIRBuilder,
   CallSeqStart = MIRBuilder.buildInstr(Wony::ADJCALLSTACKDOWN);
 
   // We don't support indirect calls.
-  if (!Info.Callee.isGlobal())
+  if (!Info.Callee.isGlobal()) {
     return false;
+  }
   auto MIB = MIRBuilder.buildInstrNoInsert(Wony::CALL);
   MIB->addOperand(MF, Info.Callee);
 
@@ -399,18 +415,21 @@ bool WonyCallLowering::lowerCall(MachineIRBuilder &MIRBuilder,
       .addImm(Assigner.StackSize)
       .addImm(0);
 
-  if (!Info.CanLowerReturn)
+  if (!Info.CanLowerReturn) {
     return false;
+  }
 
   // Finally we can copy the returned value back into its virtual-register. In
   // symmetry with the arguments, the physical register must be an
   // implicit-define of the call instruction.
-  if (Info.OrigRet.Ty->isVoidTy())
+  if (Info.OrigRet.Ty->isVoidTy()) {
     return true;
+  }
 
   CallReturnHandler CallRetHandler(MIRBuilder, MRI, MIB);
-  if (!OutArgs.empty() && OutArgs[0].Flags[0].isReturned())
+  if (!OutArgs.empty() && OutArgs[0].Flags[0].isReturned()) {
     return false;
+  }
 
   WonyOutgoingValueAssigner OutValAssigner(RetCC_Wony_Common,
                                             RetCC_Wony_Common);
