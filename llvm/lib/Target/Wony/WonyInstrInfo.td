@@ -40,6 +40,12 @@ def ADDi16rr : WonyBinaryInstruction<"addi16",
                                       /*opcode=*/0,
                                       /*is32Bit=*/false>;
 
+let Pattern = [(set (i32 GPR32:$dst), (add (i32 GPR32:$src0),
+                                           (i32 GPR32:$src1)))] in
+def ADDi32rr : WonyBinaryInstruction<"addi32",
+                                      /*opcode=*/0,
+                                      /*is32Bit=*/true>;
+
 let hasSideEffects = 1, isCodeGenOnly = 1 in {
   let Defs = [SP], Uses = [SP] in {
   def ADJCALLSTACKDOWN : WonyPseudoInstruction<(outs), (ins i32imm:$amt1, i32imm:$amt2),
