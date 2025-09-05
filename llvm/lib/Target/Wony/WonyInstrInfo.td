@@ -131,6 +131,8 @@ def MOVFROMSP: WonyInstruction<"movfromsp", "$dst, $sp",
   let Inst{3-0} = 0;
 }
 
+def : Pat<(i16 (frameindex:$ptr)), (MOVFROMSP (i16 (to_tframeindex $ptr)))>;
+
 let AddedComplexity = 1 in {
 
 def STRSP16: WonyStoreSPInstruction<"strsp16", /*is32Bit=*/0> {
