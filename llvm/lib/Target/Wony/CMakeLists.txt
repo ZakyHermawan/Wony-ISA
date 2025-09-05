@@ -34,6 +34,7 @@ add_llvm_target(WonyCodeGen
 
   # GlobalISel related files.
   GISel/WonyCallLowering.cpp
+  GISel/WonyLegalizerInfo.cpp
 
   LINK_COMPONENTS
   WonyDesc
