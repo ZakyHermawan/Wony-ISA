@@ -126,6 +126,17 @@ SDValue WonyTargetLowering::LowerFormalArguments(SDValue Chain, CallingConv::ID 
   return Chain;
 }
 
+bool WonyTargetLowering::CanLowerReturn(
+    CallingConv::ID CallConv, MachineFunction &MF, bool IsVarArg,
+    const SmallVectorImpl<ISD::OutputArg> &Outs, LLVMContext &Context,
+    const Type *RetTy) const {
+  SmallVector<CCValAssign, 16> ArgLocs;
+  CCState CCInfo(CallConv, IsVarArg, MF, ArgLocs,
+                 MF.getFunction().getContext());
+
+  return !IsVarArg && CCInfo.CheckReturn(Outs, RetCC_Wony_Common);
+}
+
 SDValue
 WonyTargetLowering::LowerReturn(SDValue Chain, CallingConv::ID CallConv,
                                  bool IsVarArg,
