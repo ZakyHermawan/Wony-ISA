@@ -104,6 +104,22 @@ def CALL : WonyInstruction<"call", "$tgt",
   let Pattern = [(Wonycall tglobaladdr:$tgt)];
 }
 
+def TRUNCSTR8: WonyInstruction<"truncstr8", "$src, $addr, $offset",
+                                 /*opcode=*/0b01110,
+                                 /*unusedBit=*/0,
+                                 /*oops=*/(outs),
+                                 /*iops=*/(ins GPR16:$src, GPR16:$addr, uimm4:$offset)> {
+  let mayStore = 1;
+  bits<3> src;
+  bits<3> addr;
+  bits<4> offset;
+  let Inst{9-7} = src;
+  let Inst{6-4} = addr;
+  let Inst{3-0} = offset;
+  let Pattern = [(truncstorei8 (i16 GPR16:$src), (addrmode GPR16:$addr, uimm4:$offset))];
+}
+def : Pat<(store (i8 (trunc GPR16:$src)), (addrmode GPR16:$addr, uimm4:$offset)), (TRUNCSTR8 GPR16:$src, GPR16:$addr, uimm4:$offset)>;
+
 def MOV16 : WonyMoveInstruction<"mov16", /*is32Bit=*/0>;
 def MOV32 : WonyMoveInstruction<"mov32", /*is32Bit=*/1>;
 
