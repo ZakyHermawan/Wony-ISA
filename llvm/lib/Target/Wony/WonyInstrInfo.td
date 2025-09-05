@@ -151,7 +151,17 @@ def LDRSP32: WonyLoadSPInstruction<"ldrsp32", /*is32Bit=*/1> {
   let Pattern = [(set (i32 GPR32:$dst), (load (spaddrmode OnlySP:$sp, simm7:$offset)))];
 }
 
+def LDRSEXTSP8: WonyExtLoadSPInstruction<"ldrsextsp8", /*isZExt=*/0> {
+  let Pattern = [(set GPR16:$dst, (sextload (spaddrmode OnlySP:$sp, simm7:$offset)))];
+}
+def LDRZEXTSP8: WonyExtLoadSPInstruction<"ldrzextsp8", /*isZExt=*/1> {
+  let Pattern = [(set GPR16:$dst, (zextload (spaddrmode OnlySP:$sp, simm7:$offset)))];
+}
+
 } // end AddedComplexity.
+
+// Match any_ext(load) on zextload.
+def : Pat<(i16 (extload (spaddrmode OnlySP:$sp, simm7:$offset))), (LDRZEXTSP8 OnlySP:$sp, simm7:$offset)>;
 
 def ADDSP : WonyBinarySPInstruction<"addsp",
                                      /*opcode=*/0b01010,
