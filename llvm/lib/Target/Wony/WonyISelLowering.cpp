@@ -27,6 +27,9 @@ WonyTargetLowering::WonyTargetLowering(const TargetMachine &TM,
   addRegisterClass(MVT::f16, &Wony::GPR16RegClass);
   addRegisterClass(MVT::f32, &Wony::GPR32RegClass);
 
+  // The only truncstore we have is from i16 to i8.
+  setTruncStoreAction(MVT::i32, MVT::i16, Expand);
+
   // Finalize the registration process and compute all the information that SDISel may need.
   // Tell the generic implementation that we are done with setting up our
   // register classes.
