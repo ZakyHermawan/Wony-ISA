@@ -6,8 +6,8 @@
 
 #include "WonySubtarget.h"
 #include "GISel/WonyCallLowering.h"
-#include "GISel/WonyLegalizerInfo.hpp"
-#include "GISel/WonyRegisterBankInfo.hpp"
+#include "GISel/WonyLegalizerInfo.h"
+#include "GISel/WonyRegisterBankInfo.h"
 #include "llvm/Target/TargetMachine.h"
 
 using namespace llvm;

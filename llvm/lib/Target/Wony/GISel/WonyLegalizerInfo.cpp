@@ -3,7 +3,7 @@
 /// This file implements the targeting of the Machinelegalizer class for Wony
 //===----------------------------------------------------------------------===//
 
-#include "WonyLegalizerInfo.hpp"
+#include "WonyLegalizerInfo.h"
 #include "llvm/CodeGen/TargetOpcodes.h"
 #include "llvm/CodeGenTypes/LowLevelType.h"
 #include "llvm/Support/Debug.h"

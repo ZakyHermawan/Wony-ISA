@@ -3,7 +3,7 @@
 /// This file implements the targeting of the RegisterBankInfo class for Wony
 //===----------------------------------------------------------------------===//
 
-#include "WonyRegisterBankInfo.hpp"
+#include "WonyRegisterBankInfo.h"
 #include "llvm/CodeGen/MachineFunction.h"
 #include "llvm/CodeGen/MachineRegisterInfo.h"
 #include "llvm/Support/Debug.h"
