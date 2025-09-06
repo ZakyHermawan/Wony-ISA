@@ -127,7 +127,11 @@ def TRUNCSTR8: WonyInstruction<"truncstr8", "$src, $addr, $offset",
   let Inst{3-0} = offset;
   let Pattern = [(truncstorei8 (i16 GPR16:$src), (addrmode GPR16:$addr, uimm4:$offset))];
 }
+
 def : Pat<(store (i8 (trunc GPR16:$src)), (addrmode GPR16:$addr, uimm4:$offset)), (TRUNCSTR8 GPR16:$src, GPR16:$addr, uimm4:$offset)>;
+
+def : Pat<(i16 (trunc (i32 GPR32:$src))),
+          (i16 (EXTRACT_SUBREG GPR32:$src, sub_low16))>;
 
 def MOV16 : WonyMoveInstruction<"mov16", /*is32Bit=*/0>;
 def MOV32 : WonyMoveInstruction<"mov32", /*is32Bit=*/1>;
