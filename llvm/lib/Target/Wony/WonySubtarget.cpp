@@ -7,6 +7,7 @@
 #include "WonySubtarget.h"
 #include "GISel/WonyCallLowering.h"
 #include "GISel/WonyLegalizerInfo.hpp"
+#include "GISel/WonyRegisterBankInfo.hpp"
 #include "llvm/Target/TargetMachine.h"
 
 using namespace llvm;
@@ -26,6 +27,7 @@ WonySubtarget::WonySubtarget(const Triple &TT, StringRef CPU, StringRef FS,
       TLInfo(TM, *this) {
   CallLoweringInfo.reset(new WonyCallLowering(*getTargetLowering()));
   Legalizer.reset(new WonyLegalizerInfo(*this));
+  RegBankInfo.reset(new WonyRegisterBankInfo(*getRegisterInfo()));
 }
 
 const CallLowering *WonySubtarget::getCallLowering() const {
@@ -34,4 +36,8 @@ const CallLowering *WonySubtarget::getCallLowering() const {
 
 const LegalizerInfo *WonySubtarget::getLegalizerInfo() const {
   return Legalizer.get();
+}
+
+const RegisterBankInfo *WonySubtarget::getRegBankInfo() const {
+  return RegBankInfo.get();
 }

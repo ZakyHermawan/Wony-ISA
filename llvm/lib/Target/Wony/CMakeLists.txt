@@ -12,8 +12,12 @@ tablegen(LLVM WonyGenMCCodeEmitter.inc -gen-emitter)
 # .s to MCInst
 tablegen(LLVM WonyGenAsmMatcher.inc -gen-asm-matcher)
 tablegen(LLVM WonyGenCallingConv.inc -gen-callingconv)
+# SDISel
 tablegen(LLVM WonyGenDAGISel.inc -gen-dag-isel)
+# FastISel
 tablegen(LLVM WonyGenFastISel.inc -gen-fast-isel)
+# GlobalISel
+tablegen(LLVM WonyGenRegisterBank.inc -gen-register-bank)
 
 add_public_tablegen_target(WonyCommonTableGen)
 
@@ -35,6 +39,7 @@ add_llvm_target(WonyCodeGen
   # GlobalISel related files.
   GISel/WonyCallLowering.cpp
   GISel/WonyLegalizerInfo.cpp
+  GISel/WonyRegisterBankInfo.cpp
 
   LINK_COMPONENTS
   WonyDesc
