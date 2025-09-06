@@ -27,6 +27,9 @@ class WonyTargetMachine;
 class WonyTargetLowering: public TargetLowering {
   const WonySubtarget &Subtarget;
 
+  /// Custom inserter for the RET_PSEUDO instruction.
+  MachineBasicBlock *emitRET_PSEUDO(MachineInstr &MI) const;
+
 public:
   explicit WonyTargetLowering(const TargetMachine &TM,
                                const WonySubtarget &STI);
@@ -71,6 +74,10 @@ public:
   /// grab callee resulting values..
   SDValue LowerCall(CallLoweringInfo &CLI,
                     SmallVectorImpl<SDValue> &InVals) const override;
+
+  MachineBasicBlock *
+  EmitInstrWithCustomInserter(MachineInstr &MI,
+                              MachineBasicBlock *BB) const override;
 
   /// Perform the last clean-ups after finishing instruction selection.
   void finalizeLowering(MachineFunction &MF) const override;

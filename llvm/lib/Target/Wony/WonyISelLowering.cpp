@@ -352,6 +352,27 @@ SDValue WonyTargetLowering::LowerCall(TargetLowering::CallLoweringInfo &CLI,
   return Chain;
 }
 
+MachineBasicBlock *
+WonyTargetLowering::EmitInstrWithCustomInserter(MachineInstr &MI,
+                                                 MachineBasicBlock *BB) const {
+  switch (MI.getOpcode()) {
+  default:
+    llvm_unreachable("Custom inserter not yet implemented");
+  case Wony::RET_PSEUDO:
+    return emitRET_PSEUDO(MI);
+  }
+}
+
+MachineBasicBlock *WonyTargetLowering::emitRET_PSEUDO(MachineInstr &MI) const {
+  assert(MI.getOpcode() == Wony::RET_PSEUDO);
+  MachineBasicBlock &MBB = *MI.getParent();
+  const TargetInstrInfo &TII = *Subtarget.getInstrInfo();
+  MI.setDesc(TII.get(Wony::RETURN));
+  MI.addOperand(MachineOperand::CreateReg(Wony::R0, /*IsDef=*/false,
+                                          /*IsImplicit=*/true));
+  return &MBB;
+}
+
 // Performs prologue and epilogue register management for target,
 // specifically handling the saving and restoring of the link register
 void WonyTargetLowering::finalizeLowering(MachineFunction &MF) const {
@@ -376,8 +397,10 @@ void WonyTargetLowering::finalizeLowering(MachineFunction &MF) const {
       continue;
     assert(MaybeExitMBB.getFirstTerminator() != MaybeExitMBB.end() &&
            "Exit block must have a terminator");
-    assert(MaybeExitMBB.getFirstTerminator()->getOpcode() == Wony::RETURN &&
-           "Exit block must end with return");
+    assert(
+        (MaybeExitMBB.getFirstTerminator()->getOpcode() == Wony::RETURN ||
+         MaybeExitMBB.getFirstTerminator()->getOpcode() == Wony::RET_PSEUDO) &&
+        "Exit block must end with return");
     BuildMI(MaybeExitMBB, MaybeExitMBB.getFirstTerminator(), DebugLoc(),
             TII.get(TargetOpcode::COPY), LR)
         .addReg(SavedLR);

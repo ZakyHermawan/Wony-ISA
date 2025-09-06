@@ -61,6 +61,12 @@ def RETURN : WonyNoOperandInstruction<"ret",
                                        /*opcode=*/0b00001,
                                        /*is32Bit=*/false>;
 
+// Pseudo return instruction to make the machine verifier happy during
+// GlobalISel lowering. Indeed, the live-range of R0 will only be correct
+// after we run FinalizeISel.
+let isReturn = 1, isTerminator = 1, isBarrier = 1, usesCustomInserter = 1 in
+def RET_PSEUDO : WonyPseudoInstruction<(outs), (ins), []>;
+
 let isAsCheapAsAMove = 1, isMoveImm = 1, isReMaterializable = 1 in
 def LD16imm7 : WonyInstruction<"ldi16", "$dst, $imm7",
                                  /*opcode=*/0b00010,
