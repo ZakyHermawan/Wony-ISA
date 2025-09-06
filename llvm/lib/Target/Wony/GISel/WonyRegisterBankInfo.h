@@ -8,11 +8,13 @@
 #include "MCTargetDesc/WonyMCTargetDesc.h"
 #include "llvm/CodeGen/RegisterBankInfo.h"
 #include "llvm/CodeGen/TargetRegisterInfo.h"
+#include "llvm/CodeGenTypes/LowLevelType.h"
 
 #define GET_REGBANK_DECLARATIONS
 #include "WonyGenRegisterBank.inc"
 
 namespace llvm {
+
 class TargetRegisterInfo;
 
 class WonyGenRegisterBankInfo : public RegisterBankInfo {
@@ -24,7 +26,11 @@ protected:
 class WonyRegisterBankInfo final : public WonyGenRegisterBankInfo {
 public:
   WonyRegisterBankInfo(const TargetRegisterInfo &TRI);
+  const InstructionMapping &
+  getInstrMapping(const MachineInstr &MI) const override;
+
+  const RegisterBank &getRegBankFromRegClass(const TargetRegisterClass &RC,
+                                             LLT Ty) const override;
 };
-} // namespace llvm
 
-
+} // end namespace llvm
