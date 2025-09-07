@@ -55,6 +55,11 @@ let hasSideEffects = 1, isCodeGenOnly = 1 in {
   }
 }
 
+let FastISelShouldIgnore = 1, usesCustomInserter = 1 in
+def PTR_ADD16rr :
+  WonyPseudoInstruction<(outs GPR16:$dst), (ins GPR16:$src0, GPR16:$src1),
+                         [(set GPR16:$dst, (ptradd GPR16:$src0, GPR16:$src1))]>;
+
 let Uses = [R0], isReturn = 1, isTerminator = 1, isBarrier = 1,
 Pattern = [(Wonyreturnglue)] in
 def RETURN : WonyNoOperandInstruction<"ret",

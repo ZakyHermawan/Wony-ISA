@@ -355,12 +355,17 @@ SDValue WonyTargetLowering::LowerCall(TargetLowering::CallLoweringInfo &CLI,
 MachineBasicBlock *
 WonyTargetLowering::EmitInstrWithCustomInserter(MachineInstr &MI,
                                                  MachineBasicBlock *BB) const {
+  const TargetInstrInfo &TII = *Subtarget.getInstrInfo();
   switch (MI.getOpcode()) {
   default:
     llvm_unreachable("Custom inserter not yet implemented");
   case Wony::RET_PSEUDO:
     return emitRET_PSEUDO(MI);
+  case Wony::PTR_ADD16rr:
+    MI.setDesc(TII.get(Wony::ADDi16rr));
+    break;
   }
+  return BB;
 }
 
 MachineBasicBlock *WonyTargetLowering::emitRET_PSEUDO(MachineInstr &MI) const {
