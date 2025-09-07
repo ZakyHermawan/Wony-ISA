@@ -4,11 +4,15 @@
 //
 //===----------------------------------------------------------------------===//
 
+#include "Wony.h" // For Wony::createInstructionSelector.
 #include "WonySubtarget.h"
+#include "WonyTargetMachine.h"
+
 #include "GISel/WonyCallLowering.h"
 #include "GISel/WonyLegalizerInfo.h"
 #include "GISel/WonyRegisterBankInfo.h"
 #include "llvm/Target/TargetMachine.h"
+
 
 using namespace llvm;
 
@@ -27,7 +31,10 @@ WonySubtarget::WonySubtarget(const Triple &TT, StringRef CPU, StringRef FS,
       TLInfo(TM, *this) {
   CallLoweringInfo.reset(new WonyCallLowering(*getTargetLowering()));
   Legalizer.reset(new WonyLegalizerInfo(*this));
-  RegBankInfo.reset(new WonyRegisterBankInfo(*getRegisterInfo()));
+  auto *RBI = new WonyRegisterBankInfo(*getRegisterInfo());
+  RegBankInfo.reset(RBI);
+  InstrSelector.reset(Wony::createInstructionSelector(
+      *static_cast<const WonyTargetMachine *>(&TM), *this, *RBI));
 }
 
 const CallLowering *WonySubtarget::getCallLowering() const {
@@ -40,4 +47,8 @@ const LegalizerInfo *WonySubtarget::getLegalizerInfo() const {
 
 const RegisterBankInfo *WonySubtarget::getRegBankInfo() const {
   return RegBankInfo.get();
+}
+
+InstructionSelector *WonySubtarget::getInstructionSelector() const {
+  return InstrSelector.get();
 }

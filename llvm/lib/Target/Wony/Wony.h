@@ -16,6 +16,9 @@ class Pass;
 class PassRegistry;
 class FunctionLoweringInfo;
 class FastISel;
+class InstructionSelector;
+class WonyRegisterBankInfo;
+class WonySubtarget;
 class WonyTargetMachine;
 class TargetLibraryInfo;
 
@@ -36,6 +39,10 @@ namespace Wony {
 
 FastISel *createFastISel(FunctionLoweringInfo &FuncInfo,
                          const TargetLibraryInfo *LibInfo);
+
+InstructionSelector *createInstructionSelector(const WonyTargetMachine &,
+                                               const WonySubtarget &,
+                                               const WonyRegisterBankInfo &);
 
 } // end namespace Wony.
 

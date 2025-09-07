@@ -8,7 +8,7 @@
 #include "llvm/CodeGenTypes/LowLevelType.h"
 #include "llvm/Support/Debug.h"
 
-#define DEBUG_TYPE "Wony-legalinfo"
+#define DEBUG_TYPE "wony-legalinfo"
 
 using namespace llvm;
 using namespace LegalizeActions;
