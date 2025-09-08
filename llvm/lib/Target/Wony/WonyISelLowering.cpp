@@ -228,8 +228,9 @@ SDValue WonyTargetLowering::LowerCall(TargetLowering::CallLoweringInfo &CLI,
   // flags requested in Outs.
   for (const ISD::OutputArg &Out : Outs) {
     ISD::ArgFlagsTy OutFlags = Out.Flags;
-    if (OutFlags.isByVal())
+    if (OutFlags.isByVal()) {
       report_fatal_error("Unsupported attribute");
+    }
   }
 
   SDValue InGlue;
@@ -248,9 +249,10 @@ SDValue WonyTargetLowering::LowerCall(TargetLowering::CallLoweringInfo &CLI,
     CCValAssign &VA = ArgLocs[i];
     SDValue &Arg = OutVals[i];
 
-    if (VA.getLocInfo() != CCValAssign::Full)
+    if (VA.getLocInfo() != CCValAssign::Full) {
       report_fatal_error("extensions not yet implemented: " +
                          Twine(VA.getLocInfo()));
+    }
 
     // Push arguments into RegsToPass vector
     if (VA.isRegLoc()) {
@@ -294,8 +296,9 @@ SDValue WonyTargetLowering::LowerCall(TargetLowering::CallLoweringInfo &CLI,
     Callee = DAG.getTargetGlobalAddress(G->getGlobal(), DL, PtrVT,
                                         G->getOffset(), 0);
   }
-  else
+  else {
     report_fatal_error("non-direct calls not implemented");
+  }
 
   SmallVector<SDValue, 8> Ops;
   Ops.push_back(Chain);
@@ -303,8 +306,9 @@ SDValue WonyTargetLowering::LowerCall(TargetLowering::CallLoweringInfo &CLI,
 
   // Add argument registers to the end of the list so that they are
   // known to be live into the call.
-  for (auto &Reg : RegsToPass)
+  for (auto &Reg : RegsToPass) {
     Ops.push_back(DAG.getRegister(Reg.first, Reg.second.getValueType()));
+  }
 
   const TargetRegisterInfo &TRI = *Subtarget.getRegisterInfo();
   const uint32_t *Mask = TRI.getCallPreservedMask(MF, CallConv);
@@ -312,8 +316,9 @@ SDValue WonyTargetLowering::LowerCall(TargetLowering::CallLoweringInfo &CLI,
   assert(Mask && "Missing call preserved mask for calling convention");
   Ops.push_back(DAG.getRegisterMask(Mask));
 
-  if (InGlue.getNode())
+  if (InGlue.getNode()) {
     Ops.push_back(InGlue);
+  }
 
   // The call will return a chain & a flag for retval copies to use.
   SDVTList NodeTys = DAG.getVTList(MVT::Other, MVT::Glue);
@@ -400,8 +405,12 @@ void WonyTargetLowering::finalizeLowering(MachineFunction &MF) const {
   for (MachineBasicBlock &MaybeExitMBB : MF) {
     if (!MaybeExitMBB.succ_empty())
       continue;
-    assert(MaybeExitMBB.getFirstTerminator() != MaybeExitMBB.end() &&
-           "Exit block must have a terminator");
+    if (MaybeExitMBB.getFirstTerminator() == MaybeExitMBB.end()) {
+      // Check if this is an unreachable block.
+      assert(MaybeExitMBB.pred_empty() && &MaybeExitMBB != &*MF.begin() &&
+             "Exit block must have a terminator");
+      continue;
+    }
     assert(
         (MaybeExitMBB.getFirstTerminator()->getOpcode() == Wony::RETURN ||
          MaybeExitMBB.getFirstTerminator()->getOpcode() == Wony::RET_PSEUDO) &&
