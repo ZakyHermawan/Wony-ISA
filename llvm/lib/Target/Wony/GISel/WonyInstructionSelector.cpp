@@ -72,6 +72,23 @@ WonyInstructionSelector::WonyInstructionSelector(
 {
 }
 
+static void setRegisterClassForOperands(MachineInstr &I,
+                                        MachineRegisterInfo &MRI) {
+  for (MachineOperand &MO : I.operands()) {
+    Register Reg = MO.getReg();
+    if (Reg.isPhysical()) {
+      continue;
+    }
+    const TargetRegisterClass *RC = MRI.getRegClassOrNull(Reg);
+    if (RC) {
+      continue;
+    }
+    unsigned Size = MRI.getType(Reg).getSizeInBits();
+    MRI.setRegClass(Reg, Size == 16 ? &Wony::GPR16spRegClass
+                                    : &Wony::GPR32RegClass);
+  }
+}
+
 bool WonyInstructionSelector::select(MachineInstr &I) {
   unsigned Opc = I.getOpcode();
   if (!isPreISelGenericOpcode(Opc) && Opc != TargetOpcode::PHI &&
@@ -84,23 +101,17 @@ bool WonyInstructionSelector::select(MachineInstr &I) {
   MachineRegisterInfo &MRI = MF.getRegInfo();
 
   switch (Opc) {
+  case TargetOpcode::G_IMPLICIT_DEF:
+    I.setDesc(TII.get(TargetOpcode::IMPLICIT_DEF));
+    setRegisterClassForOperands(I, MRI);
+    return true;
   case TargetOpcode::G_PHI:
     I.setDesc(TII.get(TargetOpcode::PHI));
     [[fallthrough]];
   case TargetOpcode::PHI:
   case TargetOpcode::COPY:
     // For PHIs and COPYs, we only need to assigned a register class.
-    for (MachineOperand &MO : I.operands()) {
-      Register Reg = MO.getReg();
-      if (Reg.isPhysical())
-        continue;
-      const TargetRegisterClass *RC = MRI.getRegClassOrNull(Reg);
-      if (RC)
-        continue;
-      unsigned Size = MRI.getType(Reg).getSizeInBits();
-      MRI.setRegClass(Reg, Size == 16 ? &Wony::GPR16spRegClass
-                                      : &Wony::GPR32RegClass);
-    }
+    setRegisterClassForOperands(I, MRI);
     return true;
   default:
     if (selectImpl(I, *CoverageInfo)) {
