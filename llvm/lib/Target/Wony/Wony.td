@@ -10,6 +10,7 @@ include "llvm/Target/Target.td"
 include "WonyRegisterInfo.td"
 include "WonyCallingConvention.td"
 include "WonyInstrInfo.td"
+include "GISel/WonyCombine.td"
 include "GISel/WonyRegisterBanks.td"
 
 def : ProcessorModel<"generic", NoSchedModel, /*Features=*/[]>;

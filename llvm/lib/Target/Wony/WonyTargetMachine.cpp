@@ -39,6 +39,7 @@ extern "C" LLVM_EXTERNAL_VISIBILITY void LLVMInitializeWonyTarget() {
 
   PassRegistry &PR = *PassRegistry::getPassRegistry();
   initializeWonySimpleConstantPropagationPass(PR);
+  initializeWonyMandatoryPreLegalizerCombinerPass(PR);
   initializeGlobalISel(PR);
 }
 
@@ -164,6 +165,10 @@ WonyPassConfig::WonyPassConfig(TargetMachine &TM, PassManagerBase &PM)
 bool WonyPassConfig::addIRTranslator() {
   addPass(new IRTranslator(getOptLevel()));
   return false;
+}
+
+void WonyPassConfig::addPreLegalizeMachineIR() {
+  addPass(createWonyMandatoryPreLegalizerCombiner());
 }
 
 bool WonyPassConfig::addLegalizeMachineIR() {

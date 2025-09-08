@@ -19,6 +19,8 @@ tablegen(LLVM WonyGenFastISel.inc -gen-fast-isel)
 # GlobalISel
 tablegen(LLVM WonyGenRegisterBank.inc -gen-register-bank)
 tablegen(LLVM WonyGenGlobalISel.inc -gen-global-isel)
+tablegen(LLVM WonyGenMandatoryPreLegalizeGICombiner.inc -gen-global-isel-combiner
+              -combiners="WonyMandatoryPreLegalizerCombiner")
 
 add_public_tablegen_target(WonyCommonTableGen)
 
@@ -42,6 +44,7 @@ add_llvm_target(WonyCodeGen
   GISel/WonyLegalizerInfo.cpp
   GISel/WonyRegisterBankInfo.cpp
   GISel/WonyInstructionSelector.cpp
+  GISel/WonyMandatoryPreLegalizerCombiner.cpp
 
   LINK_COMPONENTS
   WonyDesc
