@@ -3,7 +3,11 @@
 /// This file implements the targeting of the Machinelegalizer class for Wony
 //===----------------------------------------------------------------------===//
 
+#include "WonySubtarget.h"
 #include "WonyLegalizerInfo.h"
+#include "llvm/CodeGen/GlobalISel/LegalizerHelper.h"
+#include "llvm/CodeGen/GlobalISel/MIPatternMatch.h"
+#include "llvm/CodeGen/GlobalISel/MachineIRBuilder.h"
 #include "llvm/CodeGen/TargetOpcodes.h"
 #include "llvm/CodeGenTypes/LowLevelType.h"
 #include "llvm/Support/Debug.h"
@@ -12,8 +16,9 @@
 
 using namespace llvm;
 using namespace LegalizeActions;
+using namespace MIPatternMatch;
 
-WonyLegalizerInfo::WonyLegalizerInfo(const WonySubtarget &ST) {
+WonyLegalizerInfo::WonyLegalizerInfo(const WonySubtarget &ST) : ST(ST) {
   const LLT p0 = LLT::pointer(0, 16);
   const LLT s8 = LLT::scalar(8);
   const LLT s16 = LLT::scalar(16);
@@ -46,5 +51,76 @@ WonyLegalizerInfo::WonyLegalizerInfo(const WonySubtarget &ST) {
       .legalFor({s16, s32})
       .clampScalar(0, s16, s32);
 
+  getActionDefinitionsBuilder(TargetOpcode::G_MUL)
+      .customIf([=](const LegalityQuery &Query) {
+        const auto &DstTy = Query.Types[0];
+        return !DstTy.isVector() && DstTy.getSizeInBits() == 32;
+      });
+
   getLegacyLegalizerInfo().computeTables();
+}
+
+bool WonyLegalizerInfo::legalizeCustom(
+    LegalizerHelper &Helper, MachineInstr &MI,
+    LostDebugLocObserver &LocObserver) const {
+  MachineIRBuilder &MIRBuilder = Helper.MIRBuilder;
+  MachineRegisterInfo &MRI = *MIRBuilder.getMRI();
+  GISelChangeObserver &Observer = Helper.Observer;
+  switch (MI.getOpcode()) {
+  default:
+    // No idea what to do.
+    return false;
+  case TargetOpcode::G_MUL:
+    return legalizeMul(MI, MRI, MIRBuilder, Observer);
+  }
+  llvm_unreachable("expected switch to return");
+}
+
+bool WonyLegalizerInfo::legalizeMul(MachineInstr &MI, MachineRegisterInfo &MRI,
+                                     MachineIRBuilder &MIRBuilder,
+                                     GISelChangeObserver &Observer) const {
+  assert(MI.getOpcode() == TargetOpcode::G_MUL);
+
+  Register ValReg = MI.getOperand(0).getReg();
+  const LLT ValTy = MRI.getType(ValReg);
+  (void)ValTy;
+  assert(ValTy == LLT::scalar(32) &&
+         "Custom legalization description doesn't match implementation");
+
+  // Check if the MUL is fed by two s|zext and if so let is go through.
+  Register LHS = MI.getOperand(1).getReg();
+  Register RHS = MI.getOperand(2).getReg();
+  Register PlainLHS, PlainRHS;
+  bool isSigned;
+  if (mi_match(LHS, MRI, m_GSExt(m_Reg(PlainLHS))) &&
+      mi_match(RHS, MRI, m_GSExt(m_Reg(PlainRHS))))
+    isSigned = true;
+  else if (mi_match(LHS, MRI, m_GZExt(m_Reg(PlainLHS))) &&
+           mi_match(RHS, MRI, m_GZExt(m_Reg(PlainRHS))))
+    isSigned = false;
+  else
+    return false;
+
+  LLT s16 = LLT::scalar(16);
+  if (MRI.getType(PlainLHS) != s16 || MRI.getType(PlainRHS) != s16)
+    return false;
+
+  const TargetInstrInfo &TII = *ST.getInstrInfo();
+  unsigned Opcode = isSigned ? Wony::WIDENING_SMUL : Wony::WIDENING_UMUL;
+  Observer.changingInstr(MI);
+  MI.setDesc(TII.get(Opcode));
+  auto UpdateOperand = [](MachineOperand &MO, Register NewReg) {
+    MO.setReg(NewReg);
+    // The previous operand may have been the last use of the previous register.
+    // This may not be the case of the NewReg, so conservatively drop the last
+    // use flag.
+    MO.setIsKill(false);
+  };
+  UpdateOperand(MI.getOperand(1), PlainLHS);
+  UpdateOperand(MI.getOperand(2), PlainRHS);
+  constrainSelectedInstRegOperands(MI, TII, *MRI.getTargetRegisterInfo(),
+                                   *ST.getRegBankInfo());
+
+  Observer.changedInstr(MI);
+  return true;
 }
