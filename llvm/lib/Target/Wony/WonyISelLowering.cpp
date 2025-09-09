@@ -386,6 +386,12 @@ MachineBasicBlock *WonyTargetLowering::emitRET_PSEUDO(MachineInstr &MI) const {
 // Performs prologue and epilogue register management for target,
 // specifically handling the saving and restoring of the link register
 void WonyTargetLowering::finalizeLowering(MachineFunction &MF) const {
+  // GISel already call this method so don't call it twice.
+  if (MF.getProperties().hasProperty(
+          MachineFunctionProperties::Property::Selected)) {
+    return;
+  }
+
   const TargetInstrInfo &TII = *Subtarget.getInstrInfo();
   MachineRegisterInfo &MRI = MF.getRegInfo();
 
@@ -403,8 +409,9 @@ void WonyTargetLowering::finalizeLowering(MachineFunction &MF) const {
 
   // Epilogue: Restore LR
   for (MachineBasicBlock &MaybeExitMBB : MF) {
-    if (!MaybeExitMBB.succ_empty())
+    if (!MaybeExitMBB.succ_empty()) {
       continue;
+    }
     if (MaybeExitMBB.getFirstTerminator() == MaybeExitMBB.end()) {
       // Check if this is an unreachable block.
       assert(MaybeExitMBB.pred_empty() && &MaybeExitMBB != &*MF.begin() &&
