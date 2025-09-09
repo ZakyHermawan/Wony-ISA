@@ -52,6 +52,10 @@ def gi_addrmode :
   GIComplexOperandMatcher<p0, "selectAddrMode">,
   GIComplexPatternEquiv<addrmode>;
 
+def gi_spaddrmode :
+  GIComplexOperandMatcher<p0, "selectSPAddrMode">,
+  GIComplexPatternEquiv<spaddrmode>;
+
 // Instruction templates.
 
 class WonyInstruction<string asm, string operands,
