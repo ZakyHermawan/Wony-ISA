@@ -375,12 +375,6 @@ bool WonyCallLowering::lowerCall(MachineIRBuilder &MIRBuilder,
     splitToValueTypes(Info.OrigRet, InArgs, DL, Info.CallConv);
   }
 
-  if (!Info.CanLowerReturn) {
-    insertSRetLoads(MIRBuilder, Info.OrigRet.Ty, Info.OrigRet.Regs,
-                    Info.DemoteRegister, Info.DemoteStackIndex);
-    return true;
-  }
-
   CCAssignFn *AssignFnFixed;
   CCAssignFn *AssignFnVarArg;
   AssignFnFixed = AssignFnVarArg = CC_Wony_Common;
@@ -402,8 +396,9 @@ bool WonyCallLowering::lowerCall(MachineIRBuilder &MIRBuilder,
   // Do the actual argument marshalling.
   OutgoingArgHandler Handler(MIRBuilder, MRI, MIB);
   if (!determineAndHandleAssignments(Handler, Assigner, OutArgs, MIRBuilder,
-                                     Info.CallConv, Info.IsVarArg))
+                                     Info.CallConv, Info.IsVarArg)) {
     return false;
+  }
 
   const uint32_t *Mask = TRI.getCallPreservedMask(MF, Info.CallConv);
 
@@ -417,14 +412,16 @@ bool WonyCallLowering::lowerCall(MachineIRBuilder &MIRBuilder,
       .addImm(Assigner.StackSize)
       .addImm(0);
 
-  if (!Info.CanLowerReturn) {
-    return false;
-  }
-
   // Finally we can copy the returned value back into its virtual-register. In
   // symmetry with the arguments, the physical register must be an
   // implicit-define of the call instruction.
   if (Info.OrigRet.Ty->isVoidTy()) {
+    return true;
+  }
+
+  if (!Info.CanLowerReturn) {
+    insertSRetLoads(MIRBuilder, Info.OrigRet.Ty, Info.OrigRet.Regs,
+                    Info.DemoteRegister, Info.DemoteStackIndex);
     return true;
   }
 
