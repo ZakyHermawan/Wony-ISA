@@ -205,5 +205,8 @@ def SUBSP : WonyBinarySPInstruction<"subsp",
                                      /*opcode=*/0b01010,
                                      /*isAdd=*/false>;
 
+let Pattern = [(set GPR32:$dst, (int_wony_widening_smul GPR16:$src0, GPR16:$src1))] in
 def WIDENING_SMUL : WonyWidenIMul<"wsmul", /*isSign=*/1>;
+
+let Pattern = [(set GPR32:$dst, (int_wony_widening_umul GPR16:$src0, GPR16:$src1))] in
 def WIDENING_UMUL : WonyWidenIMul<"wumul", /*isSign=*/0>;
