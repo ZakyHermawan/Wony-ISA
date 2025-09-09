@@ -12,6 +12,7 @@
 #include "llvm/CodeGen/GlobalISel/GIMatchTableExecutorImpl.h"
 #include "llvm/CodeGen/GlobalISel/InstructionSelector.h"
 #include "llvm/CodeGen/GlobalISel/MachineIRBuilder.h"
+#include "llvm/CodeGen/GlobalISel/MIPatternMatch.h"
 #include "llvm/CodeGen/MachineFunction.h"
 #include "llvm/IR/IntrinsicsWony.h"
 #include "llvm/Support/Debug.h"
@@ -19,6 +20,7 @@
 #define DEBUG_TYPE "wony-gisel"
 
 using namespace llvm;
+using namespace MIPatternMatch;
 
 namespace {
 
@@ -39,6 +41,8 @@ private:
   /// tblgen generated 'select' implementation that is used as the initial
   /// selector for the patterns that do not require complex C++.
   bool selectImpl(MachineInstr &I, CodeGenCoverage &CoverageInfo) const;
+
+  ComplexRendererFns selectAddrMode(MachineOperand &Root) const;
 
   const WonyInstrInfo &TII;
   const WonyRegisterInfo &TRI;
@@ -120,6 +124,44 @@ bool WonyInstructionSelector::select(MachineInstr &I) {
   }
 
   return false;
+}
+
+InstructionSelector::ComplexRendererFns
+WonyInstructionSelector::selectAddrMode(MachineOperand &Root) const {
+  if (!Root.isReg()) {
+    return std::nullopt;
+  }
+
+  MachineRegisterInfo &MRI =
+      Root.getParent()->getParent()->getParent()->getRegInfo();
+
+  // Loads and stores through the stack need to go through the SP-based
+  // addressing mode.
+  MachineInstr *RootDef = MRI.getVRegDef(Root.getReg());
+  if (RootDef->getOpcode() == TargetOpcode::G_FRAME_INDEX) {
+    return std::nullopt;
+  }
+
+  Register BaseReg = RootDef->getOperand(0).getReg();
+  uint64_t Offset = 0;
+  // Do some matching of ADD + immediate and fold if it fits.
+  if (RootDef->getOpcode() == TargetOpcode::G_ADD ||
+      RootDef->getOpcode() == TargetOpcode::G_PTR_ADD) {
+    std::optional<ValueAndVReg> MaybeConstantInt;
+    if (mi_match(RootDef->getOperand(2).getReg(), MRI,
+                 m_GCst(MaybeConstantInt))) {
+      uint64_t CstImm = MaybeConstantInt->Value.getZExtValue();
+      if (CstImm < 16) {
+        BaseReg = RootDef->getOperand(1).getReg();
+        Offset = CstImm;
+      }
+    }
+  }
+
+  return {{
+      [=](MachineInstrBuilder &MIB) { MIB.addReg(BaseReg); },
+      [=](MachineInstrBuilder &MIB) { MIB.addImm(Offset); },
+  }};
 }
 
 namespace llvm {

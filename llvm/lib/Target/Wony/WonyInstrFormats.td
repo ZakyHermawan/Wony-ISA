@@ -46,6 +46,12 @@ def to_tframeindex : SDNodeXForm<frameindex, [{
 def addrmode : ComplexPattern<iPTR, 2, "selectAddrMode", []>;
 def spaddrmode : ComplexPattern<iPTR, 2, "selectSPAddrMode", []>;
 
+def p0 : LLT;
+
+def gi_addrmode :
+  GIComplexOperandMatcher<p0, "selectAddrMode">,
+  GIComplexPatternEquiv<addrmode>;
+
 // Instruction templates.
 
 class WonyInstruction<string asm, string operands,
