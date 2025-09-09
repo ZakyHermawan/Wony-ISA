@@ -210,3 +210,8 @@ def WIDENING_SMUL : WonyWidenIMul<"wsmul", /*isSign=*/1>;
 
 let Pattern = [(set GPR32:$dst, (int_wony_widening_umul GPR16:$src0, GPR16:$src1))] in
 def WIDENING_UMUL : WonyWidenIMul<"wumul", /*isSign=*/0>;
+
+def : Pat<(i32 (mul (sext GPR16:$src0), (sext GPR16:$src1))),
+          (WIDENING_SMUL GPR16:$src0, GPR16:$src1)>;
+def : Pat<(i32 (mul (zext GPR16:$src0), (zext GPR16:$src1))),
+          (WIDENING_UMUL GPR16:$src0, GPR16:$src1)>;

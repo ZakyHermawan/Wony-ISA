@@ -80,7 +80,6 @@ body:             |
     %3:_(s32) = G_LOAD %4(p0) :: (invariant load (s32))
     $d1 = COPY %3(s32)
     RET_PSEUDO implicit $d1
-
 ...
 ---
 name: ptrAdd_str
