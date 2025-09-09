@@ -13,7 +13,12 @@ class AsmImmRange<int Low, int High> : AsmOperandClass {
   let PredicateMethod = "isImmInRange<" # Low # "," # High # ">";
 }
 
-def uimm7 : Operand<i16>, ImmLeaf<i16, [{return Imm >= 0 && Imm < 128;}]> {
+
+def u16imm7 : Operand<i16>, ImmLeaf<i16, [{return Imm >= 0 && Imm < 128;}]> {
+  let ParserMatchClass = AsmImmRange<0, 127>;
+}
+
+def u32imm7 : Operand<i32>, ImmLeaf<i32, [{return Imm >= 0 && Imm < 128;}]> {
   let ParserMatchClass = AsmImmRange<0, 127>;
 }
 
@@ -115,6 +120,24 @@ class WonyLoadInstruction<string asm,
   let Inst{9-7} = dst;
   let Inst{6-4} = addr;
   let Inst{3-0} = offset;
+}
+
+class WonyLoadImmediate<string asm,
+                         bits<5> opcode,
+                         bit is32Bit,
+                         RegisterClass DstRC = !if(is32Bit, GPR32, GPR16),
+                         Operand ImmTy = !if(is32Bit, u32imm7, u16imm7)>
+          : WonyInstruction<asm, "$dst, $imm7", opcode, is32Bit,
+                                 /*oops=*/(outs DstRC:$dst),
+                                 /*iops=*/(ins ImmTy:$imm7)> {
+  let isAsCheapAsAMove = 1;
+  let isMoveImm = 1;
+  let isReMaterializable = 1;
+  bits<3> dst;
+  bits<7> imm7;
+  let Inst{9-7} = dst;
+  let Inst{6-0} = imm7;
+  let Pattern = [(set DstRC:$dst, ImmTy:$imm7)];
 }
 
 class WonyStoreInstruction<string asm,
