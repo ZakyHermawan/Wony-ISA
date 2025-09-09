@@ -204,3 +204,6 @@ def ADDSP : WonyBinarySPInstruction<"addsp",
 def SUBSP : WonyBinarySPInstruction<"subsp",
                                      /*opcode=*/0b01010,
                                      /*isAdd=*/false>;
+
+def WIDENING_SMUL : WonyWidenIMul<"wsmul", /*isSign=*/1>;
+def WIDENING_UMUL : WonyWidenIMul<"wumul", /*isSign=*/0>;
