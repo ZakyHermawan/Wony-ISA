@@ -209,6 +209,7 @@ def : Pat<(v2i16 (load (spaddrmode OnlySP:$addr, simm7:$offset))), (LDRSP32 $add
 def LDRSEXTSP8: WonyExtLoadSPInstruction<"ldrsextsp8", /*isZExt=*/0> {
   let Pattern = [(set GPR16:$dst, (sextload (spaddrmode OnlySP:$sp, simm7:$offset)))];
 }
+
 def LDRZEXTSP8: WonyExtLoadSPInstruction<"ldrzextsp8", /*isZExt=*/1> {
   let Pattern = [(set GPR16:$dst, (zextload (spaddrmode OnlySP:$sp, simm7:$offset)))];
 }
@@ -244,3 +245,10 @@ let Pattern = [(set (i32 GPR32:$dst), (and GPR32:$src0, GPR32:$src1))] in
 def AND32rr : WonyBinaryInstruction<"and32",
                                      /*opcode=*/0b01100,
                                      /*is32Bit=*/true>;
+
+// Patterns to deal with breaking up a GPR32 into GPR16 chunks.
+def : GINodeEquiv<G_EXTRACT_VECTOR_ELT, vector_extract>;
+def : Pat<(vector_extract (v2i16 GPR32:$rs), (i16 0)),
+          (i16 (EXTRACT_SUBREG GPR32:$rs, sub_low16))>;
+def : Pat<(vector_extract (v2i16 GPR32:$rs), (i16 1)),
+          (i16 (EXTRACT_SUBREG GPR32:$rs, sub_high16))>;
