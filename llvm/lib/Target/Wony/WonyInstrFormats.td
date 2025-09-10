@@ -182,6 +182,22 @@ class WonyStoreInstruction<string asm,
   let Inst{3-0} = offset;
 }
 
+class WonyExtLoadInstruction<string asm,
+                           bit isZExt = 0>
+          : WonyInstruction<asm, "$dst, $addr, $offset",
+                                 /*opcode=*/0b01101,
+                                 isZExt,
+                                 /*oops=*/(outs GPR16:$dst),
+                                 /*iops=*/(ins GPR16:$addr, uimm4:$offset)> {
+  let mayLoad = 1;
+  bits<3> dst;
+  bits<3> addr;
+  bits<4> offset;
+  let Inst{9-7} = dst;
+  let Inst{6-4} = addr;
+  let Inst{3-0} = offset;
+}
+
 class WonyMoveInstruction<string asm,
                            bit is32Bit = 0,
                            RegisterClass RC = !if(is32Bit, GPR32, GPR16)>
