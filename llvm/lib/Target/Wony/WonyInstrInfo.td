@@ -108,12 +108,17 @@ def LDR32 : WonyLoadInstruction<"ldr32",
   let Pattern = [(set (i32 GPR32:$dst), (load (addrmode GPR16:$addr, uimm4:$offset)))];
 }
 
+def : Pat<(v2i16 (load (addrmode GPR16:$addr, uimm4:$offset))),
+          (LDR32 $addr, $offset)>;
+
 def LDRSEXT8: WonyExtLoadInstruction<"ldrsext8", /*isZExt=*/0> {
   let Pattern = [(set GPR16:$dst, (sextload (addrmode GPR16:$addr, uimm4:$offset)))];
 }
+
 def LDRZEXT8: WonyExtLoadInstruction<"ldrzext8", /*isZExt=*/1> {
   let Pattern = [(set GPR16:$dst, (zextload (addrmode GPR16:$addr, uimm4:$offset)))];
 }
+
 // Match any_ext(load) on zextload.
 def : Pat<(i16 (extload (addrmode GPR16:$addr, simm7:$offset))),
           (LDRZEXT8 GPR16:$addr, uimm4:$offset)>;
@@ -128,6 +133,9 @@ def CALL : WonyInstruction<"call", "$tgt",
   let Inst{10-0} = tgt;
   let Pattern = [(Wonycall tglobaladdr:$tgt)];
 }
+
+def : Pat<(store (v2i16 GPR32:$src), (addrmode GPR16:$addr, uimm4:$offset)),
+          (STR32 $src, $addr, $offset)>;
 
 def TRUNCSTR8: WonyInstruction<"truncstr8", "$src, $addr, $offset",
                                  /*opcode=*/0b01110,
@@ -196,6 +204,8 @@ def LDRSP32: WonyLoadSPInstruction<"ldrsp32", /*is32Bit=*/1> {
   let Pattern = [(set (i32 GPR32:$dst), (load (spaddrmode OnlySP:$sp, simm7:$offset)))];
 }
 
+def : Pat<(v2i16 (load (spaddrmode OnlySP:$addr, simm7:$offset))), (LDRSP32 $addr, $offset)>;
+
 def LDRSEXTSP8: WonyExtLoadSPInstruction<"ldrsextsp8", /*isZExt=*/0> {
   let Pattern = [(set GPR16:$dst, (sextload (spaddrmode OnlySP:$sp, simm7:$offset)))];
 }
@@ -230,7 +240,7 @@ let Pattern = [(set GPR16:$dst, (and GPR16:$src0, GPR16:$src1))] in
 def AND16rr : WonyBinaryInstruction<"and16",
                                      /*opcode=*/0b01100,
                                      /*is32Bit=*/false>;
-let Pattern = [(set GPR32:$dst, (and GPR32:$src0, GPR32:$src1))] in
+let Pattern = [(set (i32 GPR32:$dst), (and GPR32:$src0, GPR32:$src1))] in
 def AND32rr : WonyBinaryInstruction<"and32",
                                      /*opcode=*/0b01100,
                                      /*is32Bit=*/true>;

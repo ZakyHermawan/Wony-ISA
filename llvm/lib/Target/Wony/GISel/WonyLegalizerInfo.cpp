@@ -40,7 +40,11 @@ WonyLegalizerInfo::WonyLegalizerInfo(const WonySubtarget &ST) : ST(ST) {
                                  {s16, p0, s8, 8}, // anyext/truncstore
                                  {s16, p0, s16, 8},
                                  {s32, p0, s32, 8}})
-      .clampScalar(0, s16, s32);
+      .clampScalar(0, s16, s32)
+      .lowerIf([=](const LegalityQuery &Query) {
+        return Query.Types[0].isScalar() &&
+               Query.Types[0] != Query.MMODescrs[0].MemoryTy;
+      });
 
   // Pointer-handling.
   getActionDefinitionsBuilder(TargetOpcode::G_FRAME_INDEX).legalFor({p0});
