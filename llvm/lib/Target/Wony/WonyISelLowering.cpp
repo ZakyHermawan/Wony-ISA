@@ -26,6 +26,9 @@ WonyTargetLowering::WonyTargetLowering(const TargetMachine &TM,
   
   addRegisterClass(MVT::f16, &Wony::GPR16RegClass);
   addRegisterClass(MVT::f32, &Wony::GPR32RegClass);
+  addRegisterClass(MVT::v2i16, &Wony::GPR32RegClass);
+
+  setOperationAction(ISD::ADD, MVT::v2i16, Expand);
 
   // The only truncstore we have is from i16 to i8.
   setTruncStoreAction(MVT::i32, MVT::i16, Expand);
