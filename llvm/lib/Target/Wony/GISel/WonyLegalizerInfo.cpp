@@ -66,6 +66,18 @@ WonyLegalizerInfo::WonyLegalizerInfo(const WonySubtarget &ST) : ST(ST) {
         return !DstTy.isVector() && DstTy.getSizeInBits() == 32;
       });
 
+  // Merge/Unmerge
+  for (unsigned Op :
+       {TargetOpcode::G_MERGE_VALUES, TargetOpcode::G_UNMERGE_VALUES,
+        TargetOpcode::G_BUILD_VECTOR}) {
+    unsigned BigTyIdx = Op == TargetOpcode::G_UNMERGE_VALUES ? 1 : 0;
+    unsigned LitTyIdx = Op == TargetOpcode::G_UNMERGE_VALUES ? 0 : 1;
+    getActionDefinitionsBuilder(Op).legalIf([=](const LegalityQuery &Q) {
+      return Q.Types[BigTyIdx].getSizeInBits() == 32 &&
+             Q.Types[LitTyIdx].getSizeInBits() == 16;
+    });
+  }
+
   getActionDefinitionsBuilder(TargetOpcode::G_EXTRACT_VECTOR_ELT)
       .legalIf([=](const LegalityQuery &Q) {
         return Q.Types[0].getSizeInBits() == 16 &&
