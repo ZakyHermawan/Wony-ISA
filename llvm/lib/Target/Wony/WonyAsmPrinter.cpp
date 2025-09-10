@@ -72,7 +72,6 @@ bool WonyAsmPrinter::lowerOperand(const MachineOperand &MO, MCOperand &MCO) {
     break;
   }
   case MachineOperand::MO_MachineBasicBlock:
-  case MachineOperand::MO_ExternalSymbol:
   case MachineOperand::MO_MCSymbol:
   case MachineOperand::MO_JumpTableIndex:
   case MachineOperand::MO_ConstantPoolIndex:
