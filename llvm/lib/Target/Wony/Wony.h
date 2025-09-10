@@ -38,6 +38,9 @@ Pass *createWonyISelDAG(WonyTargetMachine &TM);
 void initializeWonyMandatoryPreLegalizerCombinerPass(PassRegistry &);
 Pass *createWonyMandatoryPreLegalizerCombiner();
 
+void initializeWonyMandatoryPostLegalizerCombinerPass(PassRegistry &);
+Pass *createWonyMandatoryPostLegalizerCombiner();
+
 namespace Wony {
 
 FastISel *createFastISel(FunctionLoweringInfo &FuncInfo,

@@ -21,6 +21,8 @@ tablegen(LLVM WonyGenRegisterBank.inc -gen-register-bank)
 tablegen(LLVM WonyGenGlobalISel.inc -gen-global-isel)
 tablegen(LLVM WonyGenMandatoryPreLegalizeGICombiner.inc -gen-global-isel-combiner
               -combiners="WonyMandatoryPreLegalizerCombiner")
+tablegen(LLVM WonyGenMandatoryPostLegalizeGICombiner.inc -gen-global-isel-combiner
+              -combiners="WonyMandatoryPostLegalizerCombiner")
 
 add_public_tablegen_target(WonyCommonTableGen)
 
@@ -45,6 +47,7 @@ add_llvm_target(WonyCodeGen
   GISel/WonyRegisterBankInfo.cpp
   GISel/WonyInstructionSelector.cpp
   GISel/WonyMandatoryPreLegalizerCombiner.cpp
+  GISel/WonyMandatoryPostLegalizerCombiner.cpp
 
   LINK_COMPONENTS
   WonyDesc
