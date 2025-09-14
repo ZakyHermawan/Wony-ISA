@@ -73,7 +73,6 @@ let isReturn = 1, isTerminator = 1, isBarrier = 1, usesCustomInserter = 1 in
 def RET_PSEUDO : WonyPseudoInstruction<(outs), (ins), []>;
 
 def LD16imm7 : WonyLoadImmediate<"ldi16",
-
                                  /*opcode=*/0b00010,
                                  /*is32Bit=*/0>;
 def LD32imm7 : WonyLoadImmediate<"ldi32",
@@ -134,7 +133,11 @@ def CALL : WonyInstruction<"call", "$tgt",
   let Pattern = [(Wonycall tglobaladdr:$tgt)];
 }
 
+def : Pat<(Wonycall texternalsym:$tgt), (CALL i16imm:$tgt)>;
+
 def : Pat<(store (v2i16 GPR32:$src), (addrmode GPR16:$addr, uimm4:$offset)),
+          (STR32 $src, $addr, $offset)>;
+def : Pat<(store (f32 GPR32:$src), (addrmode GPR16:$addr, uimm4:$offset)),
           (STR32 $src, $addr, $offset)>;
 
 def TRUNCSTR8: WonyInstruction<"truncstr8", "$src, $addr, $offset",
@@ -205,6 +208,7 @@ def LDRSP32: WonyLoadSPInstruction<"ldrsp32", /*is32Bit=*/1> {
 }
 
 def : Pat<(v2i16 (load (spaddrmode OnlySP:$addr, simm7:$offset))), (LDRSP32 $addr, $offset)>;
+def : Pat<(f32 (load (addrmode GPR16:$addr, uimm4:$offset))), (LDR32 $addr, $offset)>;
 
 def LDRSEXTSP8: WonyExtLoadSPInstruction<"ldrsextsp8", /*isZExt=*/0> {
   let Pattern = [(set GPR16:$dst, (sextload (spaddrmode OnlySP:$sp, simm7:$offset)))];

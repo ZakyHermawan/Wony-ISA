@@ -383,7 +383,7 @@ bool WonyCallLowering::lowerCall(MachineIRBuilder &MIRBuilder,
   CallSeqStart = MIRBuilder.buildInstr(Wony::ADJCALLSTACKDOWN);
 
   // We don't support indirect calls.
-  if (!Info.Callee.isGlobal()) {
+  if (!Info.Callee.isGlobal() && !Info.Callee.isSymbol()) {
     return false;
   }
   auto MIB = MIRBuilder.buildInstrNoInsert(Wony::CALL);

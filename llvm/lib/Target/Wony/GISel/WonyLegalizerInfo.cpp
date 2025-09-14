@@ -49,7 +49,9 @@ WonyLegalizerInfo::WonyLegalizerInfo(const WonySubtarget &ST) : ST(ST) {
       .legalIf([=](const LegalityQuery &Query) {
         TypeSize Size = Query.Types[0].getSizeInBits();
         return Size == 16 || Size == 32;
-      });
+      })
+      .scalarize(0)
+      .lower();
 
   // Pointer-handling.
   getActionDefinitionsBuilder(TargetOpcode::G_FRAME_INDEX).legalFor({p0});
@@ -66,6 +68,9 @@ WonyLegalizerInfo::WonyLegalizerInfo(const WonySubtarget &ST) : ST(ST) {
         const auto &DstTy = Query.Types[0];
         return !DstTy.isVector() && DstTy.getSizeInBits() == 32;
       });
+
+  // Floating-point arithmetic.
+  getActionDefinitionsBuilder(TargetOpcode::G_FADD).scalarize(0).libcall();
 
   // Merge/Unmerge
   for (unsigned Op :

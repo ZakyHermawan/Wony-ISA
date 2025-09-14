@@ -33,6 +33,8 @@ WonyTargetLowering::WonyTargetLowering(const TargetMachine &TM,
   // The only truncstore we have is from i16 to i8.
   setTruncStoreAction(MVT::i32, MVT::i16, Expand);
 
+  setOperationAction(ISD::FADD, MVT::f32, LibCall);
+
   // Finalize the registration process and compute all the information that SDISel may need.
   // Tell the generic implementation that we are done with setting up our
   // register classes.
@@ -311,8 +313,11 @@ SDValue WonyTargetLowering::LowerCall(TargetLowering::CallLoweringInfo &CLI,
     Callee = DAG.getTargetGlobalAddress(G->getGlobal(), DL, PtrVT,
                                         G->getOffset(), 0);
   }
+  else if (ExternalSymbolSDNode *E = dyn_cast<ExternalSymbolSDNode>(Callee)) {
+    Callee = DAG.getTargetExternalSymbol(E->getSymbol(), PtrVT, 0);
+  }
   else {
-    report_fatal_error("non-direct calls not implemented");
+    report_fatal_error("other calls not implemented");
   }
 
   SmallVector<SDValue, 8> Ops;
