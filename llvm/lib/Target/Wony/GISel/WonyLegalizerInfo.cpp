@@ -58,7 +58,8 @@ WonyLegalizerInfo::WonyLegalizerInfo(const WonySubtarget &ST) : ST(ST) {
   getActionDefinitionsBuilder(TargetOpcode::G_PTR_ADD).legalFor({{p0, s16}});
 
   // Arithmetic.
-  getActionDefinitionsBuilder({TargetOpcode::G_ADD, TargetOpcode::G_AND})
+  getActionDefinitionsBuilder(
+      {TargetOpcode::G_ADD, TargetOpcode::G_AND, TargetOpcode::G_SHL})
       .legalFor({s16, s32})
       .clampScalar(0, s16, s32)
       .scalarize(0);
@@ -71,7 +72,7 @@ WonyLegalizerInfo::WonyLegalizerInfo(const WonySubtarget &ST) : ST(ST) {
 
   // Floating-point arithmetic.
   getActionDefinitionsBuilder(TargetOpcode::G_FADD).scalarize(0).libcall();
-
+  
   // Merge/Unmerge
   for (unsigned Op :
        {TargetOpcode::G_MERGE_VALUES, TargetOpcode::G_UNMERGE_VALUES,
