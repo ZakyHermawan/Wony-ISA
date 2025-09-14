@@ -79,9 +79,11 @@ def LD32imm7 : WonyLoadImmediate<"ldi32",
                                  /*opcode=*/0b00010,
                                  /*is32Bit=*/1>;
 
+let usesCustomInserter = true in
 def LD16imm16 : WonyPseudoInstruction<(outs GPR16:$dst), (ins i16imm:$src),
                                        [(set GPR16:$dst, imm:$src)]>;
 
+let usesCustomInserter = true in
 def LD32imm32 : WonyPseudoInstruction<(outs GPR32:$dst), (ins i32imm:$src),
                                        [(set (i32 GPR32:$dst), imm:$src)]>;
 
