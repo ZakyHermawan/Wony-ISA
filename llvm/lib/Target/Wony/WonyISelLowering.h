@@ -17,6 +17,8 @@ enum NodeType : unsigned {
   FIRST_NUMBER = ISD::BUILTIN_OP_END,
   CALL,
   RETURN_GLUE,
+  WIDENING_SMUL,
+  WIDENING_UMUL,
 };
 
 } // end WonyISD
@@ -32,6 +34,9 @@ class WonyTargetLowering: public TargetLowering {
 
   /// Custom inserter for the RET_PSEUDO instruction.
   MachineBasicBlock *emitRET_PSEUDO(MachineInstr &MI) const;
+
+  /// Custom legalization of MUL.
+  SDValue lowerMUL(SDValue Op, SelectionDAG &DAG) const;
 
 public:
   explicit WonyTargetLowering(const TargetMachine &TM,
@@ -89,6 +94,9 @@ public:
   SDValue LowerCall(CallLoweringInfo &CLI,
                     SmallVectorImpl<SDValue> &InVals) const override;
 
+  /// Hook for custom legalization.
+  SDValue LowerOperation(SDValue Op, SelectionDAG &DAG) const override;
+  
   MachineBasicBlock *
   EmitInstrWithCustomInserter(MachineInstr &MI,
                               MachineBasicBlock *BB) const override;

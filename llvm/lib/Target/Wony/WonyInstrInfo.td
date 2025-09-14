@@ -35,6 +35,14 @@ def Wonycall : SDNode<"WonyISD::CALL",
                        [SDNPHasChain, SDNPOptInGlue, SDNPOutGlue,
                         SDNPVariadic]>;
 
+def SDTypeWideningProfile : SDTypeProfile<1, 2, [SDTCisVT<0,i32>,
+                                                 SDTCisVT<1,i16>,
+                                                 SDTCisSameAs<1,2>]>;
+def Wonywidening_smul : SDNode<"WonyISD::WIDENING_SMUL",
+                                SDTypeWideningProfile, [SDNPCommutative]>;
+def Wonywidening_umul : SDNode<"WonyISD::WIDENING_UMUL",
+                                SDTypeWideningProfile, [SDNPCommutative]>;
+
 let Pattern = [(set GPR16:$dst, (add GPR16:$src0, GPR16:$src1))] in
 def ADDi16rr : WonyBinaryInstruction<"addi16",
                                       /*opcode=*/0,
@@ -241,6 +249,11 @@ def WIDENING_UMUL : WonyWidenIMul<"wumul", /*isSign=*/0>;
 def : Pat<(i32 (mul (sext GPR16:$src0), (sext GPR16:$src1))),
           (WIDENING_SMUL GPR16:$src0, GPR16:$src1)>;
 def : Pat<(i32 (mul (zext GPR16:$src0), (zext GPR16:$src1))),
+          (WIDENING_UMUL GPR16:$src0, GPR16:$src1)>;
+
+def : Pat<(i32 (Wonywidening_smul (i16 GPR16:$src0), (i16 GPR16:$src1))),
+          (WIDENING_SMUL GPR16:$src0, GPR16:$src1)>;
+def : Pat<(i32 (Wonywidening_umul (i16 GPR16:$src0), (i16 GPR16:$src1))),
           (WIDENING_UMUL GPR16:$src0, GPR16:$src1)>;
 
 let Pattern = [(set GPR16:$dst, (and GPR16:$src0, GPR16:$src1))] in
