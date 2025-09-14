@@ -96,7 +96,10 @@ public:
 
   /// Hook for custom legalization.
   SDValue LowerOperation(SDValue Op, SelectionDAG &DAG) const override;
-  
+
+  /// Hook for custom DAG combines.
+  SDValue PerformDAGCombine(SDNode *N, DAGCombinerInfo &DCI) const override;
+
   MachineBasicBlock *
   EmitInstrWithCustomInserter(MachineInstr &MI,
                               MachineBasicBlock *BB) const override;

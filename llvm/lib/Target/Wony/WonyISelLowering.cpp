@@ -12,10 +12,34 @@
 #include "WonyCallingConvention.h"
 
 #include "llvm/CodeGen/MachineFrameInfo.h"
+#include "llvm/Support/CommandLine.h"
 
 using namespace llvm;
 
 #define DEBUG_TYPE "wony-lowering"
+
+namespace {
+
+// Modes to play with different ways of lowering a ISD::MUL.
+enum class WonyLowerMULMode {
+  Selection,
+  CustomLegalization,
+  DAGCombine,
+};
+
+} // end anonymous namespace.
+
+static cl::opt<WonyLowerMULMode> LowerMULMode(
+    "wony-lower-mul-mode", cl::Hidden,
+    cl::desc("Use different strategy to lower mul"),
+    cl::values(clEnumValN(WonyLowerMULMode::Selection, "0",
+                          "Let mul pass through legalization and selection it "
+                          "with a DAG pattern"),
+               clEnumValN(WonyLowerMULMode::CustomLegalization, "1",
+                          "Lower mul through a custom legalization rule"),
+               clEnumValN(WonyLowerMULMode::DAGCombine, "2",
+                          "Lower mul through a DAG combine")),
+    cl::init(WonyLowerMULMode::Selection));
 
 WonyTargetLowering::WonyTargetLowering(const TargetMachine &TM,
                                          const WonySubtarget &STI)
@@ -35,12 +59,40 @@ WonyTargetLowering::WonyTargetLowering(const TargetMachine &TM,
 
   setOperationAction(ISD::FADD, MVT::f32, LibCall);
 
-  setOperationAction(ISD::MUL, MVT::i32, Custom);
+  switch (LowerMULMode) {
+  case WonyLowerMULMode::CustomLegalization:
+    setOperationAction(ISD::MUL, MVT::i32, Custom);
+    break;
+  case WonyLowerMULMode::DAGCombine:
+    setTargetDAGCombine(ISD::MUL);
+    [[fallthrough]];
+  case WonyLowerMULMode::Selection:
+    // Technically our MUL are not legal since we only support
+    // the widening pattern.
+    // For the sake of the example, this is good enough though.
+    setOperationAction(ISD::MUL, MVT::i32, Legal);
+    break;
+  }
 
   // Finalize the registration process and compute all the information that SDISel may need.
   // Tell the generic implementation that we are done with setting up our
   // register classes.
   computeRegisterProperties(Subtarget.getRegisterInfo());
+}
+
+SDValue WonyTargetLowering::PerformDAGCombine(SDNode *N,
+                                               DAGCombinerInfo &DCI) const {
+  switch (N->getOpcode()) {
+  default:
+    LLVM_DEBUG(dbgs() << "Custom combining: skipping\n");
+    break;
+  case ISD::MUL:
+    if (LowerMULMode == WonyLowerMULMode::DAGCombine) {
+      return lowerMUL(SDValue(N, 0), DCI.DAG);
+    }
+    break;
+  }
+  return SDValue();
 }
 
 FastISel *
