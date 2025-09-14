@@ -27,7 +27,7 @@ void WonySubtarget::anchor() {}
 
 WonySubtarget::WonySubtarget(const Triple &TT, StringRef CPU, StringRef FS,
                                const TargetMachine &TM)
-    : WonyGenSubtargetInfo(TT, CPU, /*TuneCPU=*/"", FS), FrameLowering(*this),
+    : WonyGenSubtargetInfo(TT, CPU, /*TuneCPU=*/CPU, FS), FrameLowering(*this),
       TLInfo(TM, *this) {
   CallLoweringInfo.reset(new WonyCallLowering(*getTargetLowering()));
   Legalizer.reset(new WonyLegalizerInfo(*this));
