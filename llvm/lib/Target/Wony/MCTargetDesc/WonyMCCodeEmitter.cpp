@@ -4,6 +4,7 @@
 //
 //===----------------------------------------------------------------------===//
 
+#include "WonyMCFixups.h"
 #include "MCTargetDesc/WonyMCTargetDesc.h"
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/MC/MCCodeEmitter.h"
@@ -73,11 +74,8 @@ WonyMCCodeEmitter::getMachineOpValue(const MCInst &MI, const MCOperand &MO,
   assert(Expr->getKind() == MCExpr::SymbolRef);
 
   if (MI.getOpcode() == Wony::CALL) {
-    // FIXME: At this point we have to issue a fixup, but we need the
-    // MCAsmBackend to do that, which we don't have.
-    // Just do nothing for now.
-    // Fixups.push_back(MCFixup::create(0, Expr,
-    // (MCFixupKind)Wony::FK_Wony_PCRel_11));
+    Fixups.push_back(
+        MCFixup::create(0, Expr, (MCFixupKind)Wony::FK_Wony_PCRel_11));
   } else
     llvm_unreachable("We don't have any operation with symbols");
 
