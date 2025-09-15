@@ -241,9 +241,11 @@ def SUBSP : WonyBinarySPInstruction<"subsp",
                                      /*isAdd=*/false>;
 
 let Pattern = [(set GPR32:$dst, (int_wony_widening_smul GPR16:$src0, GPR16:$src1))] in
-def WIDENING_SMUL : WonyWidenIMul<"wsmul", /*isSign=*/1>;
+def WIDENING_SMUL : WonyWidenIMul<"wsmul", /*isSign=*/1>,
+                    Sched<[WriteWSMUL, ReadWSMULArg0, ReadWSMULArg1]>;
 
-let Pattern = [(set GPR32:$dst, (int_wony_widening_umul GPR16:$src0, GPR16:$src1))] in
+let Pattern = [(set GPR32:$dst, (int_wony_widening_umul GPR16:$src0, GPR16:$src1))],
+  SchedRW = [WriteWUMUL, ReadWUMULArg0, ReadWUMULArg1] in
 def WIDENING_UMUL : WonyWidenIMul<"wumul", /*isSign=*/0>;
 
 def : Pat<(i32 (mul (sext GPR16:$src0), (sext GPR16:$src1))),

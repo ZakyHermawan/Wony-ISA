@@ -7,13 +7,16 @@
 // Include the generic target definitions.
 include "llvm/Target/Target.td"
 
+include "WonyScheduleDefs.td"
 include "WonyRegisterInfo.td"
 include "WonyCallingConvention.td"
 include "WonyInstrInfo.td"
+include "WonySchedModel.td"
+
 include "GISel/WonyCombine.td"
 include "GISel/WonyRegisterBanks.td"
 
-def : ProcessorModel<"generic", NoSchedModel, /*Features=*/[]>;
+def : ProcessorModel<"generic", WonyDefaultModel, /*Features=*/[]>;
 
 def WonyInstrInfo : InstrInfo;
 
