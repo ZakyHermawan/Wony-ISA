@@ -4,29 +4,34 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "Wony.h"
-#include "WonySubtarget.h"
+
 #include "WonyTargetMachine.h"
+#include "Wony.h"
+#include "WonyMachineScheduler.h"
 #include "WonyTargetObjectFile.h"
 #include "WonyTargetTransformInfo.h"
-
+#include "TargetInfo/WonyTargetInfo.h" // For getTheWonyTarget.
 #include "llvm/CodeGen/GlobalISel/IRTranslator.h"
 #include "llvm/CodeGen/GlobalISel/InstructionSelect.h"
 #include "llvm/CodeGen/GlobalISel/Legalizer.h"
 #include "llvm/CodeGen/GlobalISel/RegBankSelect.h"
-
-#include "llvm/InitializePasses.h" // For initializeGlobalISel.
-#include "TargetInfo/WonyTargetInfo.h" // For getTheWonyTarget.
-#include "llvm/MC/TargetRegistry.h" // For RegisterTargetMachine.
-#include "llvm/Support/Compiler.h" // For LLVM_EXTERNAL_VISIBILITY.
-#include "llvm/Support/CodeGen.h"  // For CodeGenOptLevel.
+#include "llvm/CodeGen/MachineScheduler.h"
 #include "llvm/CodeGen/TargetPassConfig.h"
+#include "llvm/InitializePasses.h"  // For initializeGlobalISel.
+#include "llvm/MC/TargetRegistry.h" // For RegisterTargetMachine.
 #include "llvm/Passes/PassBuilder.h"
-#include "llvm/Target/TargetLoweringObjectFile.h"
+#include "llvm/Support/CodeGen.h" // For CodeGenOptLevel.
+#include "llvm/Support/CommandLine.h"
+#include "llvm/Support/Compiler.h" // For LLVM_EXTERNAL_VISIBILITY.
 
 #include <memory>
 
 using namespace llvm;
+
+static cl::opt<bool>
+    UseCustomSched("wony-use-custom-sched", cl::Hidden,
+                   cl::desc("Enable the Wony custom scheduler strategy"),
+                   cl::init(true));
 
 /**
  * This function registers the target-specific TargetMachine
@@ -201,4 +206,14 @@ void WonyPassConfig::addIRPasses() {
   TargetPassConfig::addIRPasses();
   if (getOptLevel() != CodeGenOptLevel::None)
     addPass(createWonySimpleConstantPropagationPassForLegacyPM());
+}
+
+ScheduleDAGInstrs *
+WonyPassConfig::createMachineScheduler(MachineSchedContext *C) const {
+  ScheduleDAGMILive *DAG = new ScheduleDAGMILive(
+      C, UseCustomSched ? std::make_unique<WonyPreRASchedStrategy>(C)
+                        : std::make_unique<GenericScheduler>(C));
+  // add DAG Mutations here.
+
+  return DAG;
 }

@@ -36,6 +36,7 @@ add_llvm_target(WonyCodeGen
   WonyISelDAGToDAG.cpp
   WonyFrameLowering.cpp
   WonyTargetMachine.cpp
+  WonyMachineScheduler.cpp
   WonyTargetObjectFile.cpp
   WonyCallingConvention.cpp
   WonyTargetTransformInfo.cpp

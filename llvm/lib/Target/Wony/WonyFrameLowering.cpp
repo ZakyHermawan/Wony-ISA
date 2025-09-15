@@ -30,7 +30,8 @@ void WonyFrameLowering::emitPrologue(MachineFunction &MF,
     const TargetInstrInfo *TII = MF.getSubtarget().getInstrInfo();
     BuildMI(MBB, MBB.begin(), DebugLoc(), TII->get(Wony::SUBSP), Wony::SP)
         .addReg(Wony::SP)
-        .addImm(NumBytes);
+        .addImm(NumBytes)
+        .setMIFlag(MachineInstr::FrameSetup);
   }
 }
 
@@ -46,7 +47,8 @@ void WonyFrameLowering::emitEpilogue(MachineFunction &MF,
     BuildMI(MBB, MBB.getFirstTerminator(), DebugLoc(), TII->get(Wony::ADDSP),
             Wony::SP)
         .addReg(Wony::SP)
-        .addImm(NumBytes);
+        .addImm(NumBytes)
+        .setMIFlag(MachineInstr::FrameDestroy);
   }
 }
 

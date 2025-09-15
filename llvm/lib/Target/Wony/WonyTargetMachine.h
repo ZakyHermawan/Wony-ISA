@@ -57,6 +57,9 @@ public:
   bool addGlobalInstructionSelect() override;
   bool addInstSelector() override;
   void addIRPasses() override;
+
+  // Add custom machine scheduler heuristic;
+  ScheduleDAGInstrs * createMachineScheduler(MachineSchedContext *C) const override;
 };
 
 } // end namespace llvm
