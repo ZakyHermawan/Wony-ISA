@@ -12,6 +12,7 @@
 #include "GISel/WonyLegalizerInfo.h"
 #include "GISel/WonyRegisterBankInfo.h"
 #include "llvm/Target/TargetMachine.h"
+#include "llvm/CodeGen/MachineScheduler.h" // For MachineSchedPolicy.
 
 
 using namespace llvm;
@@ -51,4 +52,10 @@ const RegisterBankInfo *WonySubtarget::getRegBankInfo() const {
 
 InstructionSelector *WonySubtarget::getInstructionSelector() const {
   return InstrSelector.get();
+}
+
+void WonySubtarget::overrideSchedPolicy(MachineSchedPolicy &Policy,
+                                         unsigned NumRegionInstrs) const {
+  Policy.OnlyTopDown = true;
+  Policy.OnlyBottomUp = false;
 }
