@@ -6,7 +6,7 @@
 ; on the fly.
 ; Therefore, this test passes if the wony intrinsics are properly hooked up.
 
-target triple="wony"
+target triple="wony--darwin"
 
 define i32 @widening_smul(i16 %a, i16 %b) {
 ; CHECK-LABEL: define i32 @widening_smul(

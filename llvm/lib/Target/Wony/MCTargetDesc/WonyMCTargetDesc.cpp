@@ -104,4 +104,7 @@ extern "C" LLVM_EXTERNAL_VISIBILITY void LLVMInitializeWonyTargetMC() {
   // Register the MC code emitter.
   TargetRegistry::RegisterMCCodeEmitter(getTheWonyTarget(),
                                         createWonyMCCodeEmitter);
+
+  TargetRegistry::RegisterMCAsmBackend(getTheWonyTarget(),
+                                       createWonyAsmBackend);
 }

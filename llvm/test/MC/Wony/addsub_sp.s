@@ -1,5 +1,5 @@
-// RUN: llvm-mc -triple=wony %s  -o - | FileCheck %s
-// RUN: llvm-mc -triple=wony %s  -o - --show-encoding | FileCheck --check-prefix=ENCODING %s
+// RUN: llvm-mc -triple=wony--darwin %s  -o - | FileCheck %s
+// RUN: llvm-mc -triple=wony--darwin %s  -o - --show-encoding | FileCheck --check-prefix=ENCODING %s
 
 // For add|subsp encoding from high bits to low bits:
 // opc<5> = 0b01010

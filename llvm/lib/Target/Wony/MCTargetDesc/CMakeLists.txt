@@ -1,7 +1,8 @@
 add_llvm_component_library(LLVMWonyDesc
   WonyMCAsmInfo.cpp
-  WonyMCTargetDesc.cpp
+  WonyAsmBackend.cpp
   WonyInstPrinter.cpp
+  WonyMCTargetDesc.cpp
   WonyMCCodeEmitter.cpp
   WonyMachObjectWriter.cpp
 

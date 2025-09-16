@@ -8,7 +8,7 @@
 ; Check the lowering with custom dag combine for mul.
 ; RUN: llc -fast-isel=0 -wony-lower-mul-mode=2 -o - %s | FileCheck %s
 
-target triple="wony"
+target triple="wony--darwin"
 
 define i32 @widening_smul(i16 %a, i16 %b) {
 ; CHECK-LABEL: widening_smul:

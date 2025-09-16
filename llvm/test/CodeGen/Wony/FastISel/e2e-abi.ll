@@ -1,5 +1,5 @@
 ; RUN: llc -O0  -o - %s -fast-isel -fast-isel-abort=3 | FileCheck %s
-target triple="wony--"
+target triple="wony--darwin"
 
 define void @empty() {
 ; CHECK-LABEL: empty:
