@@ -14,9 +14,13 @@ namespace llvm {
 
 class MCContext;
 class MCCodeEmitter;
+class MCObjectTargetWriter;
+
 MCCodeEmitter *createWonyMCCodeEmitter(const MCInstrInfo &MCII,
                                         MCContext &Ctx);
 
+std::unique_ptr<MCObjectTargetWriter>
+createWonyMachObjectWriter(uint32_t CPUType, uint32_t CPUSubType);
 } // end namespace llvm.
 
 
